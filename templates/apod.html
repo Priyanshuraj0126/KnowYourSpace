@@ -1,0 +1,529 @@
+{% extends "base.html" %}
+
+{% block title %}APOD — KnowYourSpace{% endblock %}
+{% block body_class %}apod-body{% endblock %}
+{% block main_class %}main-content main-content--dark page-full{% endblock %}
+
+{% block hero %}
+<header class="hero hero--short apod-hero">
+    <div class="hero-background" style="background-image: url('https://images.unsplash.com/photo-1502134249126-9f3755a50d46?w=1920&q=80');"></div>
+    <div class="hero-content">
+        <p class="hero-eyebrow">Daily Discovery</p>
+        <h1 class="hero-title">Astronomy Picture of the Day</h1>
+        <p class="hero-subtitle">Discover NASA's stunning daily space images with detailed explanations.</p>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+        <!-- APOD Section -->
+        <section class="apod-section">
+
+            
+            <!-- Fallback Message -->
+            <div id="fallback-message" class="fallback-message" style="display: none;">
+                <div class="fallback-content">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Could not reach NASA right now. Showing a sample image until the service is back.</span>
+                </div>
+            </div>
+            
+            <div id="apod-loading" class="fallback-message" style="display: none;">
+                <div class="fallback-content">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Loading today's space picture...</span>
+                </div>
+            </div>
+
+            <div class="apod-container">
+                <div class="apod-image-container" id="apod-image-container">
+                    <div id="apod-image-loading" class="apod-image-loading" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <img id="apod-image" class="apod-image" src="" alt="NASA APOD" style="display: none;">
+                    <iframe id="apod-video" class="apod-image apod-video-frame" title="NASA APOD Video" frameborder="0" allowfullscreen style="display: none;"></iframe>
+                    <span id="apod-video-badge" class="apod-video-badge" style="display: none;">Video APOD</span>
+                    <div class="apod-overlay">
+                        <h2 id="apod-title" class="apod-title">Loading...</h2>
+                        <p id="apod-date" class="apod-date">Loading...</p>
+                    </div>
+                    <button class="maximize-btn" onclick="maximizeImage()" title="Maximize Image">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+                <div class="apod-details">
+                    <div class="apod-description">
+                        <h3>Description</h3>
+                        <p id="apod-description">Loading NASA's Astronomy Picture of the Day...</p>
+                    </div>
+                    <div class="apod-metadata">
+                        <div class="metadata-item">
+                            <span class="metadata-label">Copyright</span>
+                            <span id="apod-copyright" class="metadata-value">Loading...</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Media Type</span>
+                            <span id="apod-media-type" class="metadata-value">Loading...</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">HD Available</span>
+                            <span id="apod-hd" class="metadata-value">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- APOD Controls -->
+        <section class="apod-controls">
+            <div class="control-buttons">
+                <button class="control-button active" onclick="loadTodayAPOD()">
+                    <i class="fas fa-calendar-day"></i>
+                    Today
+                </button>
+                <button class="control-button" onclick="loadRandomAPOD()">
+                    <i class="fas fa-random"></i>
+                    Random
+                </button>
+                <button class="control-button" onclick="toggleFavorite()">
+                    <i class="fas fa-heart" id="favorite-icon"></i>
+                    <span id="favorite-text">Add to Favorites</span>
+                </button>
+            </div>
+            <div class="date-picker">
+                <label for="date-input">Select Date:</label>
+                <input type="date" id="date-input" class="date-input" onchange="loadAPODByDate(this.value)">
+                <button class="control-button" onclick="loadAPODByDate(document.getElementById('date-input').value)">
+                    <i class="fas fa-search"></i>
+                    Load
+                </button>
+            </div>
+        </section>
+
+        <!-- Related Section -->
+        <section class="related-section">
+            <h2 class="section-title">Explore More</h2>
+            <div class="related-grid">
+                <div class="related-item">
+                    <h3>Near-Earth Objects</h3>
+                    <p>Track asteroids and comets that approach Earth with real-time data.</p>
+                    <a href="/explore" class="hero-button">Track NEOs</a>
+                </div>
+                <div class="related-item">
+                    <h3>Mars Rover Photos</h3>
+                    <p>Explore the Red Planet through the eyes of NASA's Mars rovers.</p>
+                    <a href="/explore" class="hero-button">Explore Mars</a>
+                </div>
+                <div class="related-item">
+                    <h3>Space Events</h3>
+                    <p>Discover upcoming astronomical events and celestial phenomena.</p>
+                    <a href="/events" class="hero-button">View Events</a>
+                </div>
+            </div>
+        </section>
+{% endblock %}
+
+{% block after_main %}
+    <!-- Fullscreen image viewer -->
+    <div id="image-modal" class="image-modal" role="dialog" aria-modal="true" aria-label="Fullscreen image">
+        <button class="fullscreen-close" onclick="minimizeImage()" title="Close (Esc)">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="fullscreen-top">
+            <h3 id="modal-title" class="fullscreen-title">Image Title</h3>
+        </div>
+        <div class="fullscreen-body">
+            <div id="fullscreen-loading" class="fullscreen-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+            </div>
+            <img id="modal-image" class="modal-image" src="" alt="Maximized Image">
+        </div>
+        <button class="fullscreen-minimize" onclick="minimizeImage()" title="Exit fullscreen (Esc)">
+            <i class="fas fa-compress"></i>
+            Close
+        </button>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        // Load today's APOD when page loads; prefetch random in background
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTodayAPOD();
+            setMaxDate();
+            prefetchRandomApod();
+        });
+
+        // Set maximum date to today
+        function setMaxDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date-input').max = today;
+            document.getElementById('date-input').value = today;
+        }
+
+        function showImageLoading() {
+            document.getElementById('apod-image-container').classList.add('is-loading');
+            document.getElementById('apod-image-loading').style.display = 'flex';
+        }
+
+        function hideImageLoading() {
+            document.getElementById('apod-image-container').classList.remove('is-loading');
+            document.getElementById('apod-image-loading').style.display = 'none';
+        }
+
+        let currentApodData = null;
+        let prefetchedRandom = null;
+        let prefetchRandomInFlight = null;
+        const IMAGE_PRELOAD_TIMEOUT_MS = 8000;
+        const imagePreloadCache = new Map();
+
+        function getPreviewUrl(data) {
+            return data.display_url || data.preview_url || data.url || '';
+        }
+
+        function preloadImageToCache(url) {
+            if (!url || imagePreloadCache.has(url)) return;
+            const img = new Image();
+            img.onload = () => imagePreloadCache.set(url, true);
+            img.onerror = () => imagePreloadCache.set(url, false);
+            img.src = url;
+        }
+
+        function waitForImage(url, timeoutMs = IMAGE_PRELOAD_TIMEOUT_MS) {
+            return new Promise((resolve) => {
+                if (!url) {
+                    resolve(false);
+                    return;
+                }
+                if (imagePreloadCache.get(url) === true) {
+                    resolve(true);
+                    return;
+                }
+                let settled = false;
+                const done = (ok) => {
+                    if (!settled) {
+                        settled = true;
+                        imagePreloadCache.set(url, ok);
+                        resolve(ok);
+                    }
+                };
+                const img = new Image();
+                img.onload = () => done(true);
+                img.onerror = () => done(false);
+                img.src = url;
+                setTimeout(() => done(false), timeoutMs);
+            });
+        }
+
+        function updateApodText(data) {
+            document.getElementById('apod-title').textContent = data.title;
+            document.getElementById('apod-date').textContent = formatDate(data.date);
+            document.getElementById('apod-description').textContent = data.explanation;
+            document.getElementById('apod-copyright').textContent = data.copyright || 'Public Domain';
+            document.getElementById('apod-media-type').textContent = data.media_type || 'image';
+            document.getElementById('apod-hd').textContent = data.hdurl ? 'Yes' : 'No';
+            document.getElementById('date-input').value = data.date;
+
+            if (data.is_fallback) {
+                showFallbackMessage();
+            } else {
+                hideFallbackMessage();
+            }
+        }
+
+        function prefetchRandomApod() {
+            if (prefetchRandomInFlight) return prefetchRandomInFlight;
+            prefetchRandomInFlight = fetch('/api/apod/random')
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data && !data.error) {
+                        prefetchedRandom = data;
+                        const preview = getPreviewUrl(data);
+                        if (data.media_type !== 'video' && preview) {
+                            preloadImageToCache(preview);
+                        }
+                    }
+                    return data;
+                })
+                .catch(() => null)
+                .finally(() => {
+                    prefetchRandomInFlight = null;
+                });
+            return prefetchRandomInFlight;
+        }
+
+        async function fetchAPOD(url, options = {}) {
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                if (response.ok && !data.error) {
+                    displayAPOD(data, options);
+                    return true;
+                }
+                showError('Failed to load APOD: ' + (data.error || 'Unknown error'));
+                return false;
+            } catch (error) {
+                showError('Error loading APOD: ' + error.message);
+                return false;
+            }
+        }
+
+        // Load today's APOD
+        async function loadTodayAPOD() {
+            const ok = await fetchAPOD('/api/apod');
+            if (ok) updateActiveButton('today');
+        }
+
+        // Load random APOD — use prefetched data when ready for instant text
+        async function loadRandomAPOD() {
+            updateActiveButton('random');
+
+            if (prefetchedRandom) {
+                const data = prefetchedRandom;
+                prefetchedRandom = null;
+                displayAPOD(data, { instantText: true });
+                prefetchRandomApod();
+                return;
+            }
+
+            showImageLoading();
+            try {
+                const response = await fetch('/api/apod/random');
+                const data = await response.json();
+                if (response.ok && !data.error) {
+                    displayAPOD(data, { instantText: true });
+                    prefetchRandomApod();
+                } else {
+                    hideImageLoading();
+                    showError('Failed to load APOD: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                hideImageLoading();
+                showError('Error loading APOD: ' + error.message);
+            }
+        }
+
+        // Load APOD by specific date
+        async function loadAPODByDate(date) {
+            if (!date) return;
+            const ok = await fetchAPOD(`/api/apod?date=${date}`, { instantText: true });
+            if (ok) updateActiveButton('date');
+        }
+
+        function getVideoEmbedUrl(videoUrl) {
+            if (!videoUrl) return '';
+            if (videoUrl.includes('/embed/')) return videoUrl;
+            const match = videoUrl.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+            return match ? `https://www.youtube.com/embed/${match[1]}` : videoUrl;
+        }
+
+        // Text updates immediately; image loads with spinner in the image box only
+        function displayAPOD(data, options = {}) {
+            currentApodData = data;
+            const instantText = options.instantText !== false;
+
+            if (instantText) {
+                updateApodText(data);
+            }
+
+            applyApodImage(data).then(() => {
+                if (!instantText) {
+                    updateApodText(data);
+                }
+                const container = document.getElementById('apod-image-container');
+                container.classList.remove('apod-reveal');
+                void container.offsetWidth;
+                container.classList.add('apod-reveal');
+            });
+        }
+
+        function applyApodImage(data) {
+            const imageEl = document.getElementById('apod-image');
+            const videoEl = document.getElementById('apod-video');
+            const videoBadge = document.getElementById('apod-video-badge');
+            const isVideo = data.media_type === 'video';
+            const previewUrl = getPreviewUrl(data);
+            const fullUrl = data.hdurl || data.url || previewUrl;
+
+            imageEl.alt = data.title;
+            videoBadge.style.display = 'none';
+
+            if (isVideo && data.video_url) {
+                hideImageLoading();
+                imageEl.style.opacity = '0';
+                imageEl.style.display = 'none';
+                videoEl.style.display = 'block';
+                videoEl.src = getVideoEmbedUrl(data.video_url);
+                videoBadge.style.display = 'inline-block';
+                return Promise.resolve();
+            }
+
+            videoEl.style.display = 'none';
+            videoEl.src = '';
+            imageEl.style.display = 'block';
+            imageEl.dataset.fullUrl = fullUrl;
+            showImageLoading();
+            imageEl.style.opacity = '0';
+
+            const showImage = (url) => {
+                if (!url) {
+                    hideImageLoading();
+                    imageEl.src = '';
+                    imageEl.style.opacity = '1';
+                    return;
+                }
+                imageEl.onload = () => {
+                    hideImageLoading();
+                    imageEl.style.opacity = '1';
+                };
+                imageEl.onerror = () => {
+                    hideImageLoading();
+                    imageEl.style.opacity = '1';
+                };
+                imageEl.src = url;
+                if (imageEl.complete) {
+                    hideImageLoading();
+                    imageEl.style.opacity = '1';
+                }
+            };
+
+            const targetUrl = previewUrl || fullUrl;
+            if (!targetUrl) {
+                hideImageLoading();
+                return Promise.resolve();
+            }
+
+            return waitForImage(targetUrl, 2500).then((cached) => {
+                if (cached) {
+                    showImage(targetUrl);
+                } else {
+                    showImage(targetUrl);
+                }
+            });
+        }
+
+        // Format date for display (noon UTC avoids timezone day-shift)
+        function formatDate(dateString) {
+            const date = new Date(dateString + 'T12:00:00');
+            return date.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+
+        // Update active button
+        function updateActiveButton(type) {
+            document.querySelectorAll('.control-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            if (type === 'today') {
+                document.querySelector('.control-button:first-child').classList.add('active');
+            } else if (type === 'random') {
+                document.querySelector('.control-button:nth-child(2)').classList.add('active');
+            }
+        }
+
+        // Toggle favorite
+        function toggleFavorite() {
+            const icon = document.getElementById('favorite-icon');
+            const text = document.getElementById('favorite-text');
+            
+            if (icon.classList.contains('fas')) {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                text.textContent = 'Add to Favorites';
+                // Remove from favorites logic here
+            } else {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                text.textContent = 'Remove from Favorites';
+                // Add to favorites logic here
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            document.getElementById('apod-title').textContent = 'Error';
+            document.getElementById('apod-description').textContent = message;
+            document.getElementById('apod-image').src = '';
+        }
+
+        // Show fallback message
+        function showFallbackMessage() {
+            document.getElementById('fallback-message').style.display = 'block';
+        }
+
+        // Hide fallback message
+        function hideFallbackMessage() {
+            document.getElementById('fallback-message').style.display = 'none';
+        }
+
+
+
+        function maximizeImage() {
+            const modal = document.getElementById('image-modal');
+            const modalImage = document.getElementById('modal-image');
+            const modalTitle = document.getElementById('modal-title');
+            const loadingEl = document.getElementById('fullscreen-loading');
+            const apodImage = document.getElementById('apod-image');
+            const apodVideo = document.getElementById('apod-video');
+            const apodTitle = document.getElementById('apod-title');
+
+            if (apodVideo.style.display !== 'none' && apodVideo.src) {
+                window.open(apodVideo.src, '_blank', 'noopener');
+                return;
+            }
+
+            const fullUrl = apodImage.dataset.fullUrl || apodImage.src;
+            if (!fullUrl) return;
+
+            modalTitle.textContent = apodTitle.textContent;
+            modalImage.alt = apodImage.alt;
+            modalImage.style.opacity = '0';
+            loadingEl.style.display = 'flex';
+            modal.classList.add('is-open');
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+
+            const reveal = () => {
+                loadingEl.style.display = 'none';
+                modalImage.style.opacity = '1';
+            };
+
+            modalImage.onload = reveal;
+            modalImage.onerror = reveal;
+            modalImage.src = fullUrl;
+            if (modalImage.complete) reveal();
+        }
+
+        function minimizeImage() {
+            const modal = document.getElementById('image-modal');
+            const modalImage = document.getElementById('modal-image');
+            modal.classList.remove('is-open');
+            modal.style.display = 'none';
+            modalImage.src = '';
+            modalImage.style.opacity = '0';
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('image-modal');
+            const body = modal.querySelector('.fullscreen-body');
+
+            body.addEventListener('click', function(e) {
+                if (e.target === body) {
+                    minimizeImage();
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+                    minimizeImage();
+                }
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,849 @@
+{% extends "base.html" %}
+
+{% block title %}Astronomical Events — KnowYourSpace{% endblock %}
+{% block body_class %}events-body{% endblock %}
+{% block main_class %}main-content main-content--dark page-full{% endblock %}
+
+{% block hero %}
+<header class="hero hero--short explore-hero">
+    <div class="hero-background" style="background-image: url('https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=1920&q=80');"></div>
+    <div class="hero-content">
+        <p class="hero-eyebrow">Look Up Tonight</p>
+        <h1 class="hero-title">Astronomical Events</h1>
+        <p class="hero-subtitle">Track upcoming celestial events, meteor showers, eclipses, and planetary alignments.</p>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+        <!-- Featured Section -->
+        <section class="featured-section">
+            <h2 class="section-title">Upcoming Events</h2>
+            <p class="section-subtitle">Don't miss these spectacular astronomical events happening in the night sky.</p>
+        </section>
+
+        <!-- Event Categories Section -->
+        <section class="categories-section">
+            <div class="categories-grid" id="categories-grid">
+                <!-- Categories will be loaded dynamically -->
+            </div>
+        </section>
+
+        <!-- Events Grid -->
+        <section class="events-section">
+            <h2 class="section-title">Featured Events</h2>
+            <div class="cards-grid" id="events-grid">
+                <!-- Events will be loaded dynamically -->
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading astronomical events...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Calendar Section -->
+        <section class="calendar-section">
+            <h2 class="section-title">Interactive Event Calendar</h2>
+            <div class="calendar-container">
+                <div class="calendar-controls">
+                    <button class="calendar-nav-btn" onclick="previousMonth()">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h3 id="current-month-year">Loading...</h3>
+                    <button class="calendar-nav-btn" onclick="nextMonth()">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="calendar-grid" id="calendar-grid">
+                    <!-- Calendar will be loaded dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Search Section -->
+        <section class="search-section">
+            <h2 class="section-title">Search Events</h2>
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Search for astronomical events..." class="search-input">
+                    <select id="event-type-filter" class="event-type-filter">
+                        <option value="all">All Event Types</option>
+                        <option value="meteor_showers">Meteor Showers</option>
+                        <option value="eclipses">Eclipses</option>
+                        <option value="planetary_events">Planetary Events</option>
+                        <option value="comets">Comets</option>
+                        <option value="space_missions">Space Missions</option>
+                        <option value="near_earth_objects">NASA NEO Watch</option>
+                    </select>
+                    <button onclick="searchEvents()" class="search-btn">
+                        <i class="fas fa-search"></i>
+                        Search
+                    </button>
+                </div>
+                <div id="search-results" class="search-results">
+                    <!-- Search results will appear here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA Section -->
+        <section class="final-cta-section">
+            <h2 class="section-title">Never Miss a Celestial Event</h2>
+            <p class="section-subtitle">Stay updated with our comprehensive astronomical event calendar and personalized notifications.</p>
+            <a href="#calendar-grid" class="hero-button">View Calendar</a>
+        </section>
+{% endblock %}
+
+{% block after_main %}
+    <!-- Event Details Modal -->
+    <div id="event-modal" class="event-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-event-title">Event Title</h3>
+                <div class="header-controls">
+                    <button class="close-modal" onclick="closeEventModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="event-details">
+                    <div class="event-info-grid">
+                        <div class="info-item">
+                            <i class="fas fa-calendar"></i>
+                            <div>
+                                <label>Date</label>
+                                <span id="modal-event-date">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="info-item" id="modal-event-time-info" style="display: none;">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <label>Best Viewing</label>
+                                <span id="modal-event-time">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="info-item" id="modal-event-constellation-info" style="display: none;">
+                            <i class="fas fa-star"></i>
+                            <div>
+                                <label>Constellation</label>
+                                <span id="modal-event-constellation">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="info-item" id="modal-event-planets-info" style="display: none;">
+                            <i class="fas fa-planet-ringed"></i>
+                            <div>
+                                <label>Planets</label>
+                                <span id="modal-event-planets">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="info-item" id="modal-event-rate-info" style="display: none;">
+                            <i class="fas fa-meteor"></i>
+                            <div>
+                                <label>Peak Rate</label>
+                                <span id="modal-event-rate">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="info-item" id="modal-event-duration-info" style="display: none;">
+                            <i class="fas fa-hourglass-half"></i>
+                            <div>
+                                <label>Duration</label>
+                                <span id="modal-event-duration">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="info-item" id="modal-event-coverage-info" style="display: none;">
+                            <i class="fas fa-eye"></i>
+                            <div>
+                                <label>Max Coverage</label>
+                                <span id="modal-event-coverage">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="info-item" id="modal-event-separation-info" style="display: none;">
+                            <i class="fas fa-ruler"></i>
+                            <div>
+                                <label>Separation</label>
+                                <span id="modal-event-separation">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="info-item" id="modal-event-magnitude-info" style="display: none;">
+                            <i class="fas fa-brightness"></i>
+                            <div>
+                                <label>Magnitude</label>
+                                <span id="modal-event-magnitude">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="info-item" id="modal-event-agency-info" style="display: none;">
+                            <i class="fas fa-rocket"></i>
+                            <div>
+                                <label>Agency</label>
+                                <span id="modal-event-agency">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="info-item" id="modal-event-visibility-info" style="display: none;">
+                            <i class="fas fa-globe"></i>
+                            <div>
+                                <label>Visibility</label>
+                                <span id="modal-event-visibility">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-description">
+                        <h4>Description</h4>
+                        <p id="modal-event-description">Loading...</p>
+                    </div>
+                    <div class="event-safety" id="modal-event-safety" style="display: none;">
+                        <h4>Safety Note</h4>
+                        <p id="modal-event-safety-text">Loading...</p>
+                    </div>
+                    <div class="event-tips" id="modal-event-tips" style="display: none;">
+                        <h4>Viewing Tips</h4>
+                        <ul id="modal-event-tips-list">
+                            <!-- Tips will be populated dynamically -->
+                        </ul>
+                    </div>
+                    <div class="event-equipment" id="modal-event-equipment" style="display: none;">
+                        <h4>Equipment Recommendations</h4>
+                        <ul id="modal-event-equipment-list">
+                            <!-- Equipment will be populated dynamically -->
+                        </ul>
+                    </div>
+                    <div class="event-photography" id="modal-event-photography" style="display: none;">
+                        <h4>Photography Tips</h4>
+                        <ul id="modal-event-photography-list">
+                            <!-- Photography tips will be populated dynamically -->
+                        </ul>
+                    </div>
+                    <div class="event-locations" id="modal-event-locations" style="display: none;">
+                        <h4>Best Viewing Locations</h4>
+                        <p id="modal-event-locations-text">Loading...</p>
+                    </div>
+                    <div class="event-weather" id="modal-event-weather" style="display: none;">
+                        <h4>Weather Considerations</h4>
+                        <p id="modal-event-weather-text">Loading...</p>
+                    </div>
+                    <div class="event-significance" id="modal-event-significance" style="display: none;">
+                        <h4>Historical & Scientific Significance</h4>
+                        <p id="modal-event-significance-text">Loading...</p>
+                    </div>
+                    <div class="event-facts" id="modal-event-facts" style="display: none;">
+                        <h4>Fun Facts</h4>
+                        <ul id="modal-event-facts-list">
+                            <!-- Fun facts will be populated dynamically -->
+                        </ul>
+                    </div>
+                    <div class="event-mission" id="modal-event-mission" style="display: none;">
+                        <h4>Mission Details</h4>
+                        <div class="mission-details">
+                            <div class="mission-item">
+                                <label>Objectives:</label>
+                                <p id="modal-event-objectives">Loading...</p>
+                            </div>
+                            <div class="mission-item">
+                                <label>Technology:</label>
+                                <p id="modal-event-technology">Loading...</p>
+                            </div>
+                            <div class="mission-item">
+                                <label>Timeline:</label>
+                                <p id="modal-event-timeline">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                         <div class="modal-footer">
+                 <div class="footer-controls">
+                     <button class="close-btn" onclick="closeEventModal()">
+                         <i class="fas fa-times"></i>
+                         Close
+                     </button>
+                 </div>
+             </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        // Global variables for calendar navigation
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth() + 1;
+
+        // Load page content when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFeaturedEvents();
+            loadEventCategories();
+            loadCalendar();
+        });
+
+
+
+        // Load featured events
+        async function loadFeaturedEvents() {
+            try {
+                const response = await fetch('/api/events/featured');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayEvents(data.featured_events);
+                } else {
+                    showError('Failed to load events: ' + data.error);
+                }
+            } catch (error) {
+                showError('Error loading events: ' + error.message);
+            }
+        }
+
+        // Load event categories
+        async function loadEventCategories() {
+            try {
+                const response = await fetch('/api/events/categories');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayCategories(data.categories);
+                } else {
+                    showError('Failed to load categories: ' + data.error);
+                }
+            } catch (error) {
+                showError('Error loading categories: ' + error.message);
+            }
+        }
+
+        // Load calendar for current month
+        async function loadCalendar() {
+            try {
+                const response = await fetch(`/api/events/calendar?year=${currentYear}&month=${currentMonth}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayCalendar(data);
+                } else {
+                    showError('Failed to load calendar: ' + data.error);
+                }
+            } catch (error) {
+                showError('Error loading calendar: ' + error.message);
+            }
+        }
+
+        // Display events in the grid
+        function displayEvents(events) {
+            const eventsGrid = document.getElementById('events-grid');
+            
+            if (!events || events.length === 0) {
+                eventsGrid.innerHTML = '<p class="no-events">No events found for the selected criteria.</p>';
+                return;
+            }
+
+            let eventsHTML = '';
+            events.forEach(event => {
+                eventsHTML += createEventCard(event);
+            });
+            
+            eventsGrid.innerHTML = eventsHTML;
+        }
+
+        // Create event card HTML
+        function createEventCard(event) {
+            const eventType = event.type || 'event';
+            const eventIcon = getEventIcon(eventType);
+            const eventColor = getEventColor(eventType);
+            
+            let detailsHTML = '';
+            if (event.peak_rate) {
+                detailsHTML += `<li>Peak: ${event.peak_rate}</li>`;
+            }
+            if (event.best_viewing) {
+                detailsHTML += `<li>Best viewing: ${event.best_viewing}</li>`;
+            }
+            if (event.duration) {
+                detailsHTML += `<li>Duration: ${event.duration}</li>`;
+            }
+            if (event.separation) {
+                detailsHTML += `<li>Separation: ${event.separation}</li>`;
+            }
+            if (event.constellation) {
+                detailsHTML += `<li>Constellation: ${event.constellation}</li>`;
+            }
+            if (event.planets) {
+                detailsHTML += `<li>Planets: ${event.planets.join(', ')}</li>`;
+            }
+            if (event.max_coverage) {
+                detailsHTML += `<li>Max coverage: ${event.max_coverage}</li>`;
+            }
+            if (event.agency) {
+                detailsHTML += `<li>Agency: ${event.agency}</li>`;
+            }
+
+            return `
+                <div class="card event-card" data-event-type="${eventType}" data-event-id="${event.id}">
+                    <div class="card-header" style="border-left: 4px solid ${eventColor}">
+                        <i class="${eventIcon}" style="color: ${eventColor}"></i>
+                        <h3 class="card-title">${event.name}</h3>
+                    </div>
+                    <p class="card-description">${event.description}</p>
+                    <ul class="card-list">
+                        ${detailsHTML}
+                    </ul>
+                    <div class="event-date">
+                        <i class="fas fa-calendar"></i>
+                        <span>${formatDate(event.date)}</span>
+                    </div>
+                    <button class="hero-button" onclick="viewEventDetails('${event.id}')">
+                        View Details
+                    </button>
+                </div>
+            `;
+        }
+
+        // Display categories
+        function displayCategories(categories) {
+            const categoriesGrid = document.getElementById('categories-grid');
+            
+            let categoriesHTML = '';
+            categories.forEach(category => {
+                categoriesHTML += `
+                    <div class="category-item" data-category-id="${category.id}" style="border-left: 4px solid ${category.color}">
+                        <i class="${category.icon}" style="color: ${category.color}"></i>
+                        <h3>${category.name}</h3>
+                        <p>${category.description}</p>
+                        <button class="category-btn" onclick="filterByCategory('${category.id}')">
+                            View ${category.name}
+                        </button>
+                    </div>
+                `;
+            });
+            
+            categoriesGrid.innerHTML = categoriesHTML;
+        }
+
+        // Display calendar
+        function displayCalendar(data) {
+            const currentMonthYear = document.getElementById('current-month-year');
+            const calendarGrid = document.getElementById('calendar-grid');
+            
+            currentMonthYear.textContent = `${data.month_name} ${data.year}`;
+            
+            // Create calendar header
+            let calendarHTML = `
+                <div class="calendar-header">
+                    <div>Mon</div>
+                    <div>Tue</div>
+                    <div>Wed</div>
+                    <div>Thu</div>
+                    <div>Fri</div>
+                    <div>Sat</div>
+                    <div>Sun</div>
+                </div>
+            `;
+            
+            // Create calendar days
+            data.calendar.forEach(day => {
+                const dayClass = day.is_current_month ? 'calendar-day current-month' : 'calendar-day other-month';
+                const eventsHTML = day.events.length > 0 ? 
+                    `<div class="day-events">${day.events.length} event(s)</div>` : '';
+                
+                calendarHTML += `
+                    <div class="${dayClass}">
+                        <div class="day-number">${day.day}</div>
+                        ${eventsHTML}
+                    </div>
+                `;
+            });
+            
+            calendarGrid.innerHTML = calendarHTML;
+        }
+
+        // Calendar navigation
+        function previousMonth() {
+            if (currentMonth === 1) {
+                currentMonth = 12;
+                currentYear--;
+            } else {
+                currentMonth--;
+            }
+            loadCalendar();
+        }
+
+        function nextMonth() {
+            if (currentMonth === 12) {
+                currentMonth = 1;
+                currentYear++;
+            } else {
+                currentMonth++;
+            }
+            loadCalendar();
+        }
+
+        // Search events
+        async function searchEvents() {
+            const query = document.getElementById('search-input').value.trim();
+            const eventType = document.getElementById('event-type-filter').value;
+            
+            if (!query) {
+                alert('Please enter a search term');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/events/search?q=${encodeURIComponent(query)}&type=${eventType}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displaySearchResults(data);
+                } else {
+                    showError('Search failed: ' + data.error);
+                }
+            } catch (error) {
+                showError('Search error: ' + error.message);
+            }
+        }
+
+        // Display search results
+        function displaySearchResults(data) {
+            const searchResults = document.getElementById('search-results');
+            
+            if (data.results.length === 0) {
+                searchResults.innerHTML = '<p class="no-results">No events found matching your search.</p>';
+                return;
+            }
+            
+            let resultsHTML = `
+                <h3>Search Results for "${data.query}" (${data.total_found} found)</h3>
+                <div class="search-results-grid">
+            `;
+            
+            data.results.forEach(event => {
+                resultsHTML += createEventCard(event);
+            });
+            
+            resultsHTML += '</div>';
+            searchResults.innerHTML = resultsHTML;
+        }
+
+        // Filter by category
+        async function filterByCategory(categoryId) {
+            try {
+                const eventsTitle = document.querySelector('.events-section .section-title');
+                const categoryCards = document.querySelectorAll('.category-item');
+                const activeCard = document.querySelector(`[data-category-id="${categoryId}"]`);
+                const categoryName = activeCard ? activeCard.querySelector('h3').textContent : 'Events';
+                categoryCards.forEach(card => card.classList.toggle('active', card.dataset.categoryId === categoryId));
+                eventsTitle.textContent = categoryName;
+                document.getElementById('events-grid').innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i><p>Loading events...</p></div>';
+                const response = await fetch(`/api/events?type=${categoryId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayEvents(data.events);
+                    // Scroll to events section
+                    document.getElementById('events-grid').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    showError('Failed to filter events: ' + data.error);
+                }
+            } catch (error) {
+                showError('Error filtering events: ' + error.message);
+            }
+        }
+
+        // View event details (placeholder for future modal implementation)
+        async function viewEventDetails(eventId) {
+            try {
+                // Fetch the full event data from the backend
+                const response = await fetch(`/api/events?event_id=${eventId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.events && data.events.length > 0) {
+                        const event = data.events[0];
+                        showEventModal(event);
+                    } else {
+                        // Fallback to card data if backend doesn't return the event
+                        const event = findEventById(eventId);
+                        if (event) {
+                            showEventModal(event);
+                        } else {
+                            alert('Event not found. Please try refreshing the page.');
+                        }
+                    }
+                } else {
+                    // Fallback to card data if backend request fails
+                    const event = findEventById(eventId);
+                    if (event) {
+                        showEventModal(event);
+                    } else {
+                        alert('Event not found. Please try refreshing the page.');
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching event details:', error);
+                // Fallback to card data if there's an error
+                const event = findEventById(eventId);
+                if (event) {
+                    showEventModal(event);
+                } else {
+                    alert('Event not found. Please try refreshing the page.');
+                }
+            }
+        }
+
+        // Find event by ID
+        function findEventById(eventId) {
+            // Search in featured events first
+            const featuredEvents = document.querySelectorAll('#events-grid .event-card');
+            for (let card of featuredEvents) {
+                if (card.dataset.eventId === eventId) {
+                    return getEventDataFromCard(card);
+                }
+            }
+            
+            // Search in search results if available
+            const searchResults = document.querySelectorAll('#search-results .event-card');
+            for (let card of searchResults) {
+                if (card.dataset.eventId === eventId) {
+                    return getEventDataFromCard(card);
+                }
+            }
+            
+            return null;
+        }
+
+        // Extract event data from card element
+        function getEventDataFromCard(card) {
+            const eventData = {
+                id: card.dataset.eventId,
+                name: card.querySelector('.card-title').textContent,
+                description: card.querySelector('.card-description').textContent,
+                date: card.querySelector('.event-date span').textContent
+            };
+            
+            // Extract additional details from the card list
+            const listItems = card.querySelectorAll('.card-list li');
+            listItems.forEach(item => {
+                const text = item.textContent;
+                if (text.includes('Peak:')) {
+                    eventData.peak_rate = text.replace('Peak:', '').trim();
+                } else if (text.includes('Best viewing:')) {
+                    eventData.best_viewing = text.replace('Best viewing:', '').trim();
+                } else if (text.includes('Duration:')) {
+                    eventData.duration = text.replace('Duration:', '').trim();
+                } else if (text.includes('Separation:')) {
+                    eventData.separation = text.replace('Separation:', '').trim();
+                } else if (text.includes('Constellation:')) {
+                    eventData.constellation = text.replace('Constellation:', '').trim();
+                } else if (text.includes('Planets:')) {
+                    eventData.planets = text.replace('Planets:', '').trim();
+                } else if (text.includes('Max coverage:')) {
+                    eventData.max_coverage = text.replace('Max coverage:', '').trim();
+                } else if (text.includes('Agency:')) {
+                    eventData.agency = text.replace('Agency:', '').trim();
+                }
+            });
+            
+            return eventData;
+        }
+
+        // Show event modal with details
+        function showEventModal(event) {
+            const modal = document.getElementById('event-modal');
+            
+            // Populate modal with event data
+            document.getElementById('modal-event-title').textContent = event.name;
+            document.getElementById('modal-event-date').textContent = event.date;
+            document.getElementById('modal-event-description').textContent = event.description;
+            
+            // Show/hide and populate info items based on available data
+            showInfoItem('modal-event-time-info', 'modal-event-time', event.best_viewing);
+            showInfoItem('modal-event-constellation-info', 'modal-event-constellation', event.constellation);
+            showInfoItem('modal-event-planets-info', 'modal-event-planets', event.planets);
+            showInfoItem('modal-event-rate-info', 'modal-event-rate', event.peak_rate);
+            showInfoItem('modal-event-duration-info', 'modal-event-duration', event.duration);
+            showInfoItem('modal-event-coverage-info', 'modal-event-coverage', event.max_coverage);
+            showInfoItem('modal-event-separation-info', 'modal-event-separation', event.separation);
+            showInfoItem('modal-event-magnitude-info', 'modal-event-magnitude', event.magnitude);
+            showInfoItem('modal-event-agency-info', 'modal-event-agency', event.agency);
+            showInfoItem('modal-event-visibility-info', 'modal-event-visibility', event.visibility);
+            
+            // Show safety note if available
+            if (event.safety_note) {
+                document.getElementById('modal-event-safety').style.display = 'block';
+                document.getElementById('modal-event-safety-text').textContent = event.safety_note;
+            } else {
+                document.getElementById('modal-event-safety').style.display = 'none';
+            }
+            
+            // Show viewing tips if available
+            if (event.viewing_tips && event.viewing_tips.length > 0) {
+                document.getElementById('modal-event-tips').style.display = 'block';
+                const tipsList = document.getElementById('modal-event-tips-list');
+                tipsList.innerHTML = '';
+                event.viewing_tips.forEach(tip => {
+                    const li = document.createElement('li');
+                    li.textContent = tip;
+                    tipsList.appendChild(li);
+                });
+            } else {
+                document.getElementById('modal-event-tips').style.display = 'none';
+            }
+
+            // Show equipment recommendations if available
+            if (event.equipment_recommendations && event.equipment_recommendations.length > 0) {
+                document.getElementById('modal-event-equipment').style.display = 'block';
+                const equipmentList = document.getElementById('modal-event-equipment-list');
+                equipmentList.innerHTML = '';
+                event.equipment_recommendations.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    equipmentList.appendChild(li);
+                });
+            } else {
+                document.getElementById('modal-event-equipment').style.display = 'none';
+            }
+
+            // Show photography tips if available
+            if (event.photography_tips && event.photography_tips.length > 0) {
+                document.getElementById('modal-event-photography').style.display = 'block';
+                const photographyList = document.getElementById('modal-event-photography-list');
+                photographyList.innerHTML = '';
+                event.photography_tips.forEach(tip => {
+                    const li = document.createElement('li');
+                    li.textContent = tip;
+                    photographyList.appendChild(li);
+                });
+            } else {
+                document.getElementById('modal-event-photography').style.display = 'none';
+            }
+
+            // Show best viewing locations if available
+            if (event.best_viewing_locations) {
+                document.getElementById('modal-event-locations').style.display = 'block';
+                document.getElementById('modal-event-locations-text').textContent = event.best_viewing_locations;
+            } else {
+                document.getElementById('modal-event-locations').style.display = 'none';
+            }
+
+            // Show weather considerations if available
+            if (event.weather_considerations) {
+                document.getElementById('modal-event-weather').style.display = 'block';
+                document.getElementById('modal-event-weather-text').textContent = event.weather_considerations;
+            } else {
+                document.getElementById('modal-event-weather').style.display = 'none';
+            }
+
+            // Show historical/scientific significance if available
+            if (event.historical_significance) {
+                document.getElementById('modal-event-significance').style.display = 'block';
+                document.getElementById('modal-event-significance-text').textContent = event.historical_significance;
+            } else {
+                document.getElementById('modal-event-significance').style.display = 'none';
+            }
+
+            // Show fun facts if available
+            if (event.fun_facts && event.fun_facts.length > 0) {
+                document.getElementById('modal-event-facts').style.display = 'block';
+                const factsList = document.getElementById('modal-event-facts-list');
+                factsList.innerHTML = '';
+                event.fun_facts.forEach(fact => {
+                    const li = document.createElement('li');
+                    li.textContent = fact;
+                    factsList.appendChild(li);
+                });
+            } else {
+                document.getElementById('modal-event-facts').style.display = 'none';
+            }
+
+            // Show mission details if available
+            if (event.mission_details) {
+                document.getElementById('modal-event-mission').style.display = 'block';
+                document.getElementById('modal-event-objectives').textContent = event.mission_details.objectives;
+                document.getElementById('modal-event-technology').textContent = event.mission_details.technology;
+                document.getElementById('modal-event-timeline').textContent = event.mission_details.timeline;
+            } else {
+                document.getElementById('modal-event-mission').style.display = 'none';
+            }
+            
+            // Show modal
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+
+
+        // Show/hide info item based on data availability
+        function showInfoItem(containerId, valueId, value) {
+            const container = document.getElementById(containerId);
+            const valueElement = document.getElementById(valueId);
+            
+            if (value && value !== 'N/A') {
+                container.style.display = 'flex';
+                valueElement.textContent = value;
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        // Close event modal
+        function closeEventModal() {
+            const modal = document.getElementById('event-modal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('event-modal');
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeEventModal();
+                }
+            });
+
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.style.display === 'flex') {
+                    closeEventModal();
+                }
+            });
+        });
+
+        // Helper functions
+        function getEventIcon(eventType) {
+            const icons = {
+                'meteor_shower': 'fas fa-meteor',
+                'eclipse': 'fas fa-moon',
+                'planetary_event': 'fas fa-planet-ringed',
+                'comet': 'fas fa-comet',
+                'space_mission': 'fas fa-rocket',
+                'near_earth_object': 'fas fa-satellite',
+                'event': 'fas fa-star'
+            };
+            return icons[eventType] || icons['event'];
+        }
+
+        function getEventColor(eventType) {
+            const colors = {
+                'meteor_shower': '#00d4ff',
+                'eclipse': '#ff6b6b',
+                'planetary_event': '#4ecdc4',
+                'comet': '#45b7d1',
+                'space_mission': '#96ceb4',
+                'near_earth_object': '#f9ca24',
+                'event': '#00d4ff'
+            };
+            return colors[eventType] || colors['event'];
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+
+        function showError(message) {
+            console.error(message);
+            // You can implement a toast notification system here
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,581 @@
+/* KnowYourSpace - Dashboard Styles */
+/* Specific styles for the main dashboard page */
+
+/* APOD Section */
+.apod-section {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.apod-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.apod-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+    border-color: rgba(6, 182, 212, 0.3);
+}
+
+.apod-loading {
+    padding: var(--spacing-2xl);
+    text-align: center;
+    color: var(--space-gray);
+}
+
+.apod-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-xl);
+    padding: var(--spacing-xl);
+}
+
+.apod-image {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    transition: transform 0.3s ease;
+}
+
+.apod-image:hover {
+    transform: scale(1.02);
+}
+
+.apod-info h3 {
+    color: var(--space-white);
+    margin-bottom: var(--spacing-md);
+    font-size: 1.75rem;
+}
+
+.apod-info p {
+    color: var(--space-gray);
+    line-height: 1.8;
+    margin-bottom: var(--spacing-lg);
+}
+
+.apod-meta {
+    display: flex;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    flex-wrap: wrap;
+}
+
+.apod-meta span {
+    background: rgba(6, 182, 212, 0.1);
+    color: var(--accent-color);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.apod-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+/* Stats Section */
+.stats-section {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+    border-color: rgba(6, 182, 212, 0.3);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.stat-content h3 {
+    font-size: 2.5rem;
+    color: var(--accent-color);
+    margin-bottom: var(--spacing-sm);
+    font-family: var(--font-display);
+}
+
+.stat-label {
+    color: var(--space-gray);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+/* Planets Section */
+.planets-section {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.planets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.planet-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.planet-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color), var(--secondary-color));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.planet-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+    border-color: rgba(6, 182, 212, 0.3);
+}
+
+.planet-card:hover::before {
+    opacity: 1;
+}
+
+.planet-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.planet-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.planet-icon.mercury { background: linear-gradient(135deg, #6b7280, #9ca3af); }
+.planet-icon.venus { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+.planet-icon.earth { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+.planet-icon.mars { background: linear-gradient(135deg, #ef4444, #f87171); }
+.planet-icon.jupiter { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+.planet-icon.saturn { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+.planet-icon.uranus { background: linear-gradient(135deg, #06b6d4, #22d3ee); }
+.planet-icon.neptune { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+
+.planet-info h3 {
+    color: var(--space-white);
+    margin-bottom: var(--spacing-xs);
+    font-size: 1.5rem;
+}
+
+.planet-type {
+    color: var(--accent-color);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.planet-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.planet-detail {
+    text-align: center;
+    padding: var(--spacing-md);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.planet-detail-label {
+    color: var(--space-gray);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--spacing-xs);
+}
+
+.planet-detail-value {
+    color: var(--space-white);
+    font-weight: 600;
+    font-family: var(--font-display);
+}
+
+.planet-description {
+    color: var(--space-gray);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-lg);
+}
+
+.planet-actions {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+/* Events Section */
+.events-section {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.event-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.event-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--accent-color);
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+    border-color: rgba(6, 182, 212, 0.3);
+}
+
+.event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-lg);
+}
+
+.event-title h3 {
+    color: var(--space-white);
+    margin-bottom: var(--spacing-xs);
+    font-size: 1.5rem;
+}
+
+.event-date {
+    background: rgba(6, 182, 212, 0.1);
+    color: var(--accent-color);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.event-type {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+}
+
+.event-type.meteor_shower {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+}
+
+.event-type.full_moon {
+    background: rgba(139, 92, 246, 0.2);
+    color: #c4b5fd;
+}
+
+.event-type.planet_opposition {
+    background: rgba(6, 182, 212, 0.2);
+    color: #67e8f9;
+}
+
+.event-description {
+    color: var(--space-gray);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-lg);
+}
+
+.event-viewing {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+}
+
+.event-viewing-label {
+    color: var(--accent-color);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--spacing-xs);
+    font-weight: 600;
+}
+
+.event-viewing-info {
+    color: var(--space-white);
+    font-size: 0.95rem;
+}
+
+/* Weather Section */
+.weather-section {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.weather-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.weather-loading {
+    text-align: center;
+    color: var(--space-gray);
+}
+
+.weather-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-xl);
+}
+
+.weather-current {
+    text-align: center;
+    padding: var(--spacing-xl);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.weather-icon {
+    font-size: 4rem;
+    color: var(--accent-color);
+    margin-bottom: var(--spacing-md);
+}
+
+.weather-temp {
+    font-size: 3rem;
+    color: var(--space-white);
+    font-family: var(--font-display);
+    margin-bottom: var(--spacing-sm);
+}
+
+.weather-description {
+    color: var(--space-gray);
+    font-size: 1.1rem;
+    margin-bottom: var(--spacing-lg);
+}
+
+.weather-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+}
+
+.weather-detail {
+    text-align: center;
+    padding: var(--spacing-md);
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.weather-detail-label {
+    color: var(--space-gray);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--spacing-xs);
+}
+
+.weather-detail-value {
+    color: var(--space-white);
+    font-weight: 600;
+    font-family: var(--font-display);
+}
+
+.weather-forecast {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.forecast-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.forecast-day {
+    color: var(--space-white);
+    font-weight: 500;
+}
+
+.forecast-temp {
+    color: var(--accent-color);
+    font-weight: 600;
+    font-family: var(--font-display);
+}
+
+.forecast-icon {
+    color: var(--space-gray);
+    font-size: 1.2rem;
+}
+
+/* Responsive Design for Dashboard */
+@media (max-width: 768px) {
+    .apod-content {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+
+    .apod-image {
+        height: 300px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--spacing-md);
+    }
+
+    .stat-card {
+        padding: var(--spacing-lg);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+
+    .stat-content h3 {
+        font-size: 2rem;
+    }
+
+    .planets-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .planet-details {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+
+    .events-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .weather-content {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+
+    .weather-current {
+        padding: var(--spacing-lg);
+    }
+
+    .weather-temp {
+        font-size: 2.5rem;
+    }
+
+    .weather-icon {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .apod-card,
+    .stat-card,
+    .planet-card,
+    .event-card,
+    .weather-card {
+        padding: var(--spacing-lg);
+    }
+
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-md);
+    }
+
+    .planet-actions {
+        flex-direction: column;
+    }
+
+    .event-header {
+        flex-direction: column;
+        gap: var(--spacing-md);
+        align-items: flex-start;
+    }
+
+    .weather-details {
+        grid-template-columns: 1fr;
+    }
+}

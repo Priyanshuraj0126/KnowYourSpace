@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}AI Chat — KnowYourSpace{% endblock %}
+{% block main_class %}main-content main-content--dark page-inner{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/enhancements.css') }}">
+{% endblock %}
+
+{% block hero %}
+<header class="hero hero--short">
+    <div class="hero-background" style="background-image: url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1920&q=80');"></div>
+    <div class="hero-content">
+        <p class="hero-eyebrow">Gemini AI</p>
+        <h1 class="hero-title">AI Space Assistant</h1>
+        <p class="hero-subtitle">Ask me anything about space, astronomy, and the universe.</p>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+        <section class="ai-chat-section">
+            <div class="container">
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <h2>Space Q&amp;A with AI</h2>
+                        <p>Powered by Gemini — ask about planets, stars, missions, and more.</p>
+                    </div>
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="message ai-message">
+                            <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                            <div class="message-content">
+                                <p>Hello! I'm your AI space assistant. Ask me anything about astronomy, space exploration, or the cosmos.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-suggestions">
+                        <button class="suggestion-btn" data-question="What is a black hole?">What is a black hole?</button>
+                        <button class="suggestion-btn" data-question="How far is Mars from Earth?">How far is Mars?</button>
+                        <button class="suggestion-btn" data-question="What causes meteor showers?">Meteor showers</button>
+                        <button class="suggestion-btn" data-question="Tell me about the James Webb Space Telescope">James Webb Telescope</button>
+                    </div>
+                    <form class="chat-form" id="chat-form">
+                        <input type="text" id="chat-input" placeholder="Ask a space question..." autocomplete="off">
+                        <button type="submit" class="hero-button nasa-cta">
+                            Send
+                            <span class="nasa-arrow"><i class="fas fa-arrow-right"></i></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/enhancements.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const chatMessages = document.getElementById('chat-messages');
+            const suggestionBtns = document.querySelectorAll('.suggestion-btn');
+
+            chatForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const question = chatInput.value.trim();
+                if (!question) return;
+
+                addMessage(question, 'user');
+                chatInput.value = '';
+                const loadingId = addLoadingMessage();
+
+                try {
+                    const response = await fetch('/api/ai-chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ question: question })
+                    });
+                    const data = await response.json();
+                    removeMessage(loadingId);
+                    if (data.answer) {
+                        addMessage(data.answer, 'ai');
+                    } else {
+                        addMessage('Sorry, I encountered an error. Please try again.', 'ai error');
+                    }
+                } catch (error) {
+                    removeMessage(loadingId);
+                    addMessage('Sorry, I\'m having trouble connecting. Please check your internet connection.', 'ai error');
+                }
+            });
+
+            suggestionBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    chatInput.value = this.dataset.question;
+                    chatInput.focus();
+                });
+            });
+
+            function addMessage(content, type) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${type}-message`;
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar';
+                avatar.innerHTML = type === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                messageContent.innerHTML = `<p>${content}</p>`;
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(messageContent);
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                return messageDiv.id;
+            }
+
+            function addLoadingMessage() {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'message ai-message loading';
+                loadingDiv.id = 'loading-' + Date.now();
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar';
+                avatar.innerHTML = '<i class="fas fa-robot"></i>';
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                messageContent.innerHTML = '<p>Thinking...</p>';
+                loadingDiv.appendChild(avatar);
+                loadingDiv.appendChild(messageContent);
+                chatMessages.appendChild(loadingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                return loadingDiv.id;
+            }
+
+            function removeMessage(id) {
+                const message = document.getElementById(id);
+                if (message) message.remove();
+            }
+        });
+    </script>
+{% endblock %}

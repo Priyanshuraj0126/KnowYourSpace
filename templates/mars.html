@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Mars Exploration — KnowYourSpace{% endblock %}
+{% block body_class %}mars-body{% endblock %}
+{% block main_class %}main-content main-content--dark page-inner{% endblock %}
+
+{% block extra_css %}
+<style>
+    .mars-planet-section { margin: 0 !important; }
+    .mars-section { margin: 1rem 0 !important; }
+    .mars-photos-section { margin: 1rem 0 !important; }
+    .rover-grid { margin-top: 1rem !important; }
+</style>
+{% endblock %}
+
+{% block hero %}
+<header class="hero hero--short mars-hero">
+    <div class="hero-background" style="background-image: url('https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?w=1920&q=80');"></div>
+    <div class="hero-content">
+        <p class="hero-eyebrow">Red Planet</p>
+        <h1 class="hero-title">Mars Exploration</h1>
+        <p class="hero-subtitle">Explore the Red Planet through the eyes of NASA's Mars rovers.</p>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+        <!-- Mars Planet Image -->
+        <section class="mars-planet-section">
+            <div class="mars-planet-container">
+                <img src="https://images.unsplash.com/photo-1654649451086-dd75d8170a27?q=80&w=1064&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Mars Planet" class="mars-planet-image">
+                <div class="mars-planet-overlay">
+                    <h2>The Red Planet</h2>
+                    <p>Our next frontier in space exploration</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mars Rover Selection -->
+        <section class="mars-section">
+            <h2 class="section-title">Choose Your Rover</h2>
+            <div class="rover-grid">
+                <div class="rover-item" onclick="selectRover('curiosity')">
+                    <h3>Curiosity</h3>
+                    <p>Exploring Gale Crater since 2012</p>
+                    <span class="rover-status active">Active</span>
+                </div>
+                <div class="rover-item" onclick="selectRover('perseverance')">
+                    <h3>Perseverance</h3>
+                    <p>Searching for signs of ancient life</p>
+                    <span class="rover-status active">Active</span>
+                </div>
+                <div class="rover-item" onclick="selectRover('opportunity')">
+                    <h3>Opportunity</h3>
+                    <p>Mission completed in 2019</p>
+                    <span class="rover-status completed">Completed</span>
+                </div>
+                <div class="rover-item" onclick="selectRover('spirit')">
+                    <h3>Spirit</h3>
+                    <p>Mission completed in 2011</p>
+                    <span class="rover-status completed">Completed</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mars Photos Display -->
+        <section class="mars-photos-section">
+            <div class="photo-controls">
+                <div class="control-group">
+                    <label for="rover-select">Rover:</label>
+                    <select id="rover-select" onchange="loadMarsPhotos()">
+                        <option value="curiosity">Curiosity</option>
+                        <option value="perseverance">Perseverance</option>
+                        <option value="opportunity">Opportunity</option>
+                        <option value="spirit">Spirit</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="sol-input">Sol (Martian Day):</label>
+                    <input type="number" id="sol-input" value="1000" min="1" onchange="loadMarsPhotos()">
+                </div>
+                <div class="control-group">
+                    <label for="camera-select">Camera:</label>
+                    <select id="camera-select" onchange="loadMarsPhotos()">
+                        <option value="">All Cameras</option>
+                    </select>
+                </div>
+                <button class="control-button" onclick="loadMarsPhotos()">
+                    <i class="fas fa-search"></i>
+                    Load Photos
+                </button>
+            </div>
+
+            <div id="photos-container" class="photos-container">
+                <div class="loading-message">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Loading Mars photos...
+                </div>
+            </div>
+        </section>
+
+        <!-- Mars Information -->
+        <section class="mars-info-section">
+            <h2 class="section-title">About Mars</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <h3>Planet Facts</h3>
+                    <ul>
+                        <li><strong>Distance from Sun:</strong> 227.9 million km</li>
+                        <li><strong>Length of Year:</strong> 687 Earth days</li>
+                        <li><strong>Length of Day:</strong> 24 hours 37 minutes</li>
+                        <li><strong>Gravity:</strong> 38% of Earth's</li>
+                    </ul>
+                </div>
+                <div class="info-item">
+                    <h3>Current Missions</h3>
+                    <ul>
+                        <li><strong>Curiosity:</strong> Studying habitability</li>
+                        <li><strong>Perseverance:</strong> Searching for life</li>
+                        <li><strong>Ingenuity:</strong> First Mars helicopter</li>
+                        <li><strong>MAVEN:</strong> Studying atmosphere</li>
+                    </ul>
+                </div>
+                <div class="info-item">
+                    <h3>Recent Discoveries</h3>
+                    <ul>
+                        <li>Evidence of ancient water</li>
+                        <li>Organic molecules found</li>
+                        <li>Seasonal methane patterns</li>
+                        <li>Underground ice deposits</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        let currentRover = 'curiosity';
+        let currentSol = 1000;
+        let currentCamera = '';
+
+        // Load Mars photos when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMarsPhotos();
+            loadRoverCameras();
+        });
+
+        // Select rover
+        function selectRover(rover) {
+            currentRover = rover;
+            document.getElementById('rover-select').value = rover;
+            loadRoverCameras();
+            loadMarsPhotos();
+        }
+
+        // Load rover cameras
+        async function loadRoverCameras() {
+            try {
+                const response = await fetch('/api/mars/rovers');
+                const data = await response.json();
+                
+                if (response.ok && data.rovers) {
+                    const rover = data.rovers.find(r => r.name.toLowerCase() === currentRover);
+                    if (rover) {
+                        const cameraSelect = document.getElementById('camera-select');
+                        cameraSelect.innerHTML = '<option value="">All Cameras</option>';
+                        
+                        rover.cameras.forEach(camera => {
+                            const option = document.createElement('option');
+                            option.value = camera.name;
+                            option.textContent = camera.full_name;
+                            cameraSelect.appendChild(option);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading rover cameras:', error);
+            }
+        }
+
+        // Load Mars photos
+        async function loadMarsPhotos() {
+            const rover = document.getElementById('rover-select').value;
+            const sol = document.getElementById('sol-input').value;
+            const camera = document.getElementById('camera-select').value;
+            
+            currentRover = rover;
+            currentSol = parseInt(sol);
+            currentCamera = camera;
+
+            const container = document.getElementById('photos-container');
+            container.innerHTML = '<div class="loading-message"><i class="fas fa-spinner fa-spin"></i> Loading Mars photos...</div>';
+
+            try {
+                let url = `/api/mars?rover=${rover}&sol=${sol}`;
+                if (camera) {
+                    url += `&camera=${camera}`;
+                }
+
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (response.ok && data.photos) {
+                    displayMarsPhotos(data.photos);
+                } else if (data.error) {
+                    const setupLink = data.setup_url
+                        ? `<p><a href="${data.setup_url}" target="_blank" rel="noopener">Get a free Mars Vista API key</a> and add <code>MARS_VISTA_API_KEY</code> to your <code>.env</code> file.</p>`
+                        : '';
+                    container.innerHTML = `<div class="error-message"><p>${data.error}</p>${setupLink}</div>`;
+                } else {
+                    container.innerHTML = `<div class="error-message">No photos found for ${rover} on sol ${sol}${camera ? ` with ${camera} camera` : ''}</div>`;
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="error-message">Error loading photos: ${error.message}</div>`;
+            }
+        }
+
+        // Display Mars photos
+        function displayMarsPhotos(photos) {
+            const container = document.getElementById('photos-container');
+            
+            if (photos.length === 0) {
+                container.innerHTML = '<div class="no-photos">No photos found for the selected criteria.</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="photos-header">
+                    <h3>${photos.length} Photos Found</h3>
+                    <p>Rover: ${currentRover.charAt(0).toUpperCase() + currentRover.slice(1)} | Sol: ${currentSol}${currentCamera ? ` | Camera: ${currentCamera}` : ''}</p>
+                </div>
+                <div class="photos-grid">
+                    ${photos.map(photo => `
+                        <div class="photo-item">
+                            <img src="${photo.img_src}" alt="Mars photo" onclick="openPhotoModal('${photo.img_src}', '${photo.camera.full_name}', '${photo.earth_date}')">
+                            <div class="photo-info">
+                                <p><strong>Camera:</strong> ${photo.camera.full_name}</p>
+                                <p><strong>Date:</strong> ${photo.earth_date}</p>
+                                <p><strong>Sol:</strong> ${photo.sol}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Open photo modal
+        function openPhotoModal(imgSrc, cameraName, earthDate) {
+            const modal = document.createElement('div');
+            modal.className = 'photo-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close-modal" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                    <img src="${imgSrc}" alt="Mars photo">
+                    <div class="modal-info">
+                        <h3>${cameraName}</h3>
+                        <p>Earth Date: ${earthDate}</p>
+                        <p>Sol: ${currentSol}</p>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+    </script>
+{% endblock %}

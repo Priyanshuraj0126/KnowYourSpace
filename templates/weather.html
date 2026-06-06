@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+
+{% block title %}Weather & Visibility — KnowYourSpace{% endblock %}
+{% block body_class %}page-light{% endblock %}
+{% block main_class %}main-content{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+{% endblock %}
+
+{% block hero %}
+<header class="hero hero--short weather-hero">
+    <div class="hero-background" style="background-image: url('https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1920&q=80');"></div>
+    <div class="hero-content">
+        <p class="hero-eyebrow">Stargazing Conditions</p>
+        <h1 class="hero-title">Weather & Visibility</h1>
+        <p class="hero-subtitle">Get real-time weather data and visibility forecasts for optimal stargazing conditions.</p>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+        <div class="weather-location-card">
+            <h2>Set Your Location</h2>
+            <p>Search by city name, enter coordinates, or use your current location.</p>
+            <div class="weather-form-full">
+                <div class="weather-field" style="flex:1;min-width:200px;">
+                    <label for="place-search">City or place</label>
+                    <input type="text" id="place-search" placeholder="e.g. New York, London, Tokyo">
+                </div>
+                <button onclick="searchPlace()" class="weather-btn" style="align-self:flex-end;">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+            <div class="weather-form-grid" style="margin-top:1rem;">
+                <div class="weather-field">
+                    <label for="latitude">Latitude</label>
+                    <input type="number" id="latitude" placeholder="40.7128" step="0.0001">
+                </div>
+                <div class="weather-field">
+                    <label for="longitude">Longitude</label>
+                    <input type="number" id="longitude" placeholder="-74.0060" step="0.0001">
+                </div>
+                <button onclick="getWeatherData()" class="weather-btn weather-btn--primary">
+                    <i class="fas fa-cloud-sun"></i> Get Weather
+                </button>
+            </div>
+            <div class="weather-btn-row">
+                <button onclick="getCurrentLocation()" class="weather-btn">
+                    <i class="fas fa-location-arrow"></i> Use My Location
+                </button>
+            </div>
+            <div class="search-results" id="search-results" style="display: none; margin-top:1rem;"></div>
+        </div>
+
+        <!-- Current Weather Section -->
+        <section class="current-weather-section" id="current-weather-section" style="display: none;">
+            <h2 class="section-title">Current Conditions</h2>
+            <div class="weather-grid">
+                <div class="weather-card current-conditions">
+                    <div class="weather-header">
+                        <i class="fas fa-sun weather-icon"></i>
+                        <h3>Current Weather</h3>
+                    </div>
+                    <div class="weather-data">
+                        <div class="weather-item">
+                            <span class="label">Temperature:</span>
+                            <span class="value" id="current-temp">--</span>
+                        </div>
+                        <div class="weather-item">
+                            <span class="label">Humidity:</span>
+                            <span class="value" id="current-humidity">--</span>
+                        </div>
+                        <div class="weather-item">
+                            <span class="label">Cloud Cover:</span>
+                            <span class="value" id="current-clouds">--</span>
+                        </div>
+                        <div class="weather-item">
+                            <span class="label">Visibility:</span>
+                            <span class="value" id="current-visibility">--</span>
+                        </div>
+                        <div class="weather-item">
+                            <span class="label">Wind Speed:</span>
+                            <span class="value" id="current-wind">--</span>
+                        </div>
+                        <div class="weather-item">
+                            <span class="label">Precipitation:</span>
+                            <span class="value" id="current-precip">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="weather-card stargazing-conditions">
+                    <div class="weather-header">
+                        <i class="fas fa-star weather-icon"></i>
+                        <h3>Stargazing Conditions</h3>
+                    </div>
+                    <div class="weather-data">
+                        <div class="weather-item">
+                            <span class="label">Stargazing Score:</span>
+                            <span class="value" id="stargazing-score">--</span>
+                        </div>
+                        <div class="weather-item">
+                            <span class="label">Recommendation:</span>
+                            <span class="value" id="stargazing-recommendation">--</span>
+                        </div>
+                        <div class="weather-item">
+                            <span class="label">Best Time:</span>
+                            <span class="value" id="best-time">--</span>
+                        </div>
+                        <div class="weather-item">
+                            <span class="label">Cloud Status:</span>
+                            <span class="value" id="cloud-status">--</span>
+                        </div>
+                        <div class="weather-item">
+                            <span class="label">Visibility Status:</span>
+                            <span class="value" id="visibility-status">--</span>
+                        </div>
+                        <div class="weather-item">
+                            <span class="label">Wind Status:</span>
+                            <span class="value" id="wind-status">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="weather-card detailed-analysis">
+                    <div class="weather-header">
+                        <i class="fas fa-chart-line weather-icon"></i>
+                        <h3>Detailed Analysis</h3>
+                    </div>
+                    <div class="weather-data">
+                        <div class="analysis-insights" id="analysis-insights">
+                            <!-- Insights will be populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Daily Forecast Section -->
+        <section class="forecast-section" id="forecast-section" style="display: none;">
+            <h2 class="section-title">7-Day Forecast</h2>
+            <div class="forecast-grid" id="forecast-grid">
+                <!-- Forecast items will be populated dynamically -->
+            </div>
+        </section>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        // Global variables
+        let currentLat = 40.7128; // Default to New York
+        let currentLon = -74.0060;
+
+        // Load page content when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default values
+            document.getElementById('latitude').value = currentLat;
+            document.getElementById('longitude').value = currentLon;
+            
+            // Try to get user's location on page load
+            getCurrentLocation();
+        });
+
+        // Search for a place by name
+        async function searchPlace() {
+            const placeName = document.getElementById('place-search').value.trim();
+            
+            if (!placeName) {
+                alert('Please enter a place name to search');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/weather/geocode?q=${encodeURIComponent(placeName)}`);
+                const data = await response.json();
+                
+                if (response.ok && data.results && data.results.length > 0) {
+                    displaySearchResults(data.results);
+                } else {
+                    showError('No places found with that name. Please try a different search term.');
+                }
+            } catch (error) {
+                showError('Error searching for place: ' + error.message);
+            }
+        }
+
+        // Display search results
+        function displaySearchResults(results) {
+            const searchResults = document.getElementById('search-results');
+            
+            let resultsHTML = '<h3>Search Results:</h3><div class="results-list">';
+            results.forEach((result, index) => {
+                resultsHTML += `
+                    <div class="result-item" onclick="selectPlace(${result.lat}, ${result.lon}, '${result.name}', '${result.country}')">
+                        <div class="result-name">${result.name}</div>
+                        <div class="result-details">${result.country} • ${result.state || ''}</div>
+                    </div>
+                `;
+            });
+            resultsHTML += '</div>';
+            
+            searchResults.innerHTML = resultsHTML;
+            searchResults.style.display = 'block';
+        }
+
+        // Select a place from search results
+        function selectPlace(lat, lon, name, country) {
+            currentLat = lat;
+            currentLon = lon;
+            
+            // Update input fields
+            document.getElementById('latitude').value = lat.toFixed(4);
+            document.getElementById('longitude').value = lon.toFixed(4);
+            document.getElementById('place-search').value = `${name}, ${country}`;
+            
+            // Hide search results
+            document.getElementById('search-results').style.display = 'none';
+            
+            // Get weather for selected location
+            getWeatherData();
+        }
+
+        // Get user's current location
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        currentLat = position.coords.latitude;
+                        currentLon = position.coords.longitude;
+                        
+                        // Update input fields
+                        document.getElementById('latitude').value = currentLat.toFixed(4);
+                        document.getElementById('longitude').value = currentLon.toFixed(4);
+                        
+                        // Get weather data for current location
+                        getWeatherData();
+                    },
+                    function(error) {
+                        console.log('Error getting location:', error);
+                        // Use default coordinates
+                        getWeatherData();
+                    }
+                );
+            } else {
+                console.log('Geolocation not supported');
+                getWeatherData();
+            }
+        }
+
+        // Get weather data from backend
+        async function getWeatherData() {
+            // Get coordinates from input fields
+            const lat = parseFloat(document.getElementById('latitude').value);
+            const lon = parseFloat(document.getElementById('longitude').value);
+            
+            if (isNaN(lat) || isNaN(lon)) {
+                alert('Please enter valid coordinates');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/weather?lat=${lat}&lon=${lon}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayWeatherData(data);
+                } else {
+                    showError('Failed to load weather data: ' + data.error);
+                }
+            } catch (error) {
+                showError('Error loading weather data: ' + error.message);
+            }
+        }
+
+        // Display weather data
+        function displayWeatherData(data) {
+            if (data.error) {
+                showError(data.error);
+                return;
+            }
+
+            // Show weather sections
+            document.getElementById('current-weather-section').style.display = 'block';
+            document.getElementById('forecast-section').style.display = 'block';
+
+            // Update current weather
+            const current = data.current;
+            document.getElementById('current-temp').textContent = `${current.temperature}°C`;
+            document.getElementById('current-humidity').textContent = `${current.humidity}%`;
+            document.getElementById('current-clouds').textContent = `${current.cloud_cover}%`;
+            document.getElementById('current-visibility').textContent = `${(current.visibility / 1000).toFixed(1)} km`;
+            document.getElementById('current-wind').textContent = `${current.wind_speed} m/s`;
+            document.getElementById('current-precip').textContent = `${current.precipitation_probability}%`;
+
+            // Update stargazing conditions
+            const conditions = data.stargazing_conditions;
+            document.getElementById('stargazing-score').textContent = `${conditions.score}/100`;
+            document.getElementById('stargazing-recommendation').textContent = conditions.recommendation;
+            document.getElementById('best-time').textContent = conditions.best_time;
+            document.getElementById('cloud-status').textContent = getCloudStatus(current.cloud_cover);
+            document.getElementById('visibility-status').textContent = getVisibilityStatus(current.visibility);
+            document.getElementById('wind-status').textContent = getWindStatus(current.wind_speed);
+
+            // Update detailed analysis
+            displayAnalysisInsights(conditions.detailed_analysis);
+
+            // Update forecast
+            displayForecast(data.daily_forecast);
+        }
+
+        // Display daily forecast
+        function displayForecast(forecast) {
+            const forecastGrid = document.getElementById('forecast-grid');
+            
+            let forecastHTML = '';
+            forecast.forEach(day => {
+                const date = new Date(day.date);
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                
+                forecastHTML += `
+                    <div class="forecast-day">
+                        <div class="forecast-date">
+                            <div class="day-name">${dayName}</div>
+                            <div class="month-day">${monthDay}</div>
+                        </div>
+                        <div class="forecast-temps">
+                            <div class="temp-high">${day.max_temp}°</div>
+                            <div class="temp-low">${day.min_temp}°</div>
+                        </div>
+                        <div class="forecast-precip">
+                            <i class="fas fa-cloud-rain"></i>
+                            <span>${day.precipitation_probability}%</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            forecastGrid.innerHTML = forecastHTML;
+        }
+
+        // Display detailed analysis insights
+        function displayAnalysisInsights(analysis) {
+            const insightsDiv = document.getElementById('analysis-insights');
+            
+            if (analysis && analysis.length > 0) {
+                let insightsHTML = '';
+                analysis.forEach(item => {
+                    insightsHTML += `
+                        <div class="insight-item">
+                            <p>${item}</p>
+                        </div>
+                    `;
+                });
+                insightsDiv.innerHTML = insightsHTML;
+            } else {
+                insightsDiv.innerHTML = '<p>No detailed analysis available for this location.</p>';
+            }
+        }
+
+        // Helper functions
+        function getCloudStatus(cloudCover) {
+            if (cloudCover < 20) return 'Clear';
+            if (cloudCover < 40) return 'Partly Cloudy';
+            if (cloudCover < 60) return 'Cloudy';
+            return 'Overcast';
+        }
+
+        function getVisibilityStatus(visibility) {
+            if (visibility > 10000) return 'Excellent';
+            if (visibility > 5000) return 'Good';
+            if (visibility > 3000) return 'Moderate';
+            return 'Poor';
+        }
+
+        function getWindStatus(windSpeed) {
+            if (windSpeed < 2) return 'Calm';
+            if (windSpeed < 5) return 'Light Breeze';
+            if (windSpeed < 10) return 'Moderate Breeze';
+            if (windSpeed < 15) return 'Fresh Breeze';
+            return 'Strong Winds';
+        }
+
+        function showError(message) {
+            console.error(message);
+            alert(message);
+        }
+    </script>
+{% endblock %}

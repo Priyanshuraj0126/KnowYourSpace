@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}AI Search — KnowYourSpace{% endblock %}
+{% block body_class %}page-light{% endblock %}
+{% block main_class %}main-content{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+{% endblock %}
+
+{% block hero %}
+<header class="hero hero--short ai-search-hero">
+    <div class="hero-background" style="background-image: url('https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1920&q=80');"></div>
+    <div class="hero-content">
+        <p class="hero-eyebrow">Powered by Gemini</p>
+        <h1 class="hero-title">AI Space Search</h1>
+        <p class="hero-subtitle">Ask anything about astronomy, space exploration, and the cosmos.</p>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="ai-search-shell">
+    <div class="ai-search-panel" id="search">
+        <h2>Ask a question</h2>
+        <p>Get detailed answers about planets, stars, black holes, missions, and more.</p>
+
+        <div class="ai-search-input-row">
+            <input type="text" class="search-input" placeholder="How do planets form around stars?">
+            <button class="ai-search-submit search-button">
+                Ask AI
+                <span class="nasa-arrow"><i class="fas fa-arrow-right"></i></span>
+            </button>
+        </div>
+
+        <div class="ai-search-options">
+            <div>
+                <label for="response-length">Response length</label>
+                <select id="response-length" class="search-select">
+                    <option value="concise">Concise</option>
+                    <option value="detailed" selected>Detailed</option>
+                    <option value="comprehensive">Comprehensive</option>
+                </select>
+            </div>
+            <div>
+                <label for="search-type">Topic</label>
+                <select id="search-type" class="search-select">
+                    <option value="general" selected>General</option>
+                    <option value="planets">Planets</option>
+                    <option value="stars">Stars</option>
+                    <option value="cosmology">Cosmology</option>
+                    <option value="space-exploration">Space Exploration</option>
+                    <option value="astronomy">Astronomy</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="ai-topic-chips">
+            <button type="button" class="ai-topic-chip" onclick="setResponseLength('concise')">Quick answer</button>
+            <button type="button" class="ai-topic-chip" onclick="setResponseLength('detailed')">Detailed</button>
+            <button type="button" class="ai-topic-chip" onclick="setResponseLength('comprehensive')">In-depth</button>
+        </div>
+    </div>
+
+    <div class="ai-examples-section">
+        <h3>Try asking</h3>
+        <div class="ai-example-groups">
+            <div class="ai-example-group">
+                <h4>Planetary Science</h4>
+                <ul class="example-list">
+                    <li>"What causes the Great Red Spot on Jupiter?"</li>
+                    <li>"How do planets form around stars?"</li>
+                    <li>"What makes Earth habitable?"</li>
+                </ul>
+            </div>
+            <div class="ai-example-group">
+                <h4>Stars &amp; Galaxies</h4>
+                <ul class="example-list">
+                    <li>"How do stars become black holes?"</li>
+                    <li>"What is a supernova?"</li>
+                    <li>"How do binary star systems work?"</li>
+                </ul>
+            </div>
+            <div class="ai-example-group">
+                <h4>Cosmology</h4>
+                <ul class="example-list">
+                    <li>"What is dark matter?"</li>
+                    <li>"How fast is the universe expanding?"</li>
+                    <li>"What happened during the Big Bang?"</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block after_main %}
+    <section class="search-results-section" id="search-results" style="display: none;">
+        <div class="results-container">
+            <div class="results-header">
+                <h2 class="section-title" style="font-size:1.25rem;margin:0;">Response</h2>
+                <button class="close-results-btn" onclick="hideResults()" style="background:none;border:none;cursor:pointer;font-size:1.1rem;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="results-content">
+                <div class="ai-response" id="ai-response"></div>
+                <div class="response-meta" id="response-meta"></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="loading-overlay" id="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="loading-spinner"><i class="fas fa-robot"></i></div>
+            <p>AI is thinking...</p>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.querySelector('.search-input');
+            const searchButton = document.querySelector('.search-button');
+            const searchResults = document.getElementById('search-results');
+            const aiResponse = document.getElementById('ai-response');
+            const responseMeta = document.getElementById('response-meta');
+            const loadingOverlay = document.getElementById('loading-overlay');
+
+            searchButton.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') performSearch();
+            });
+
+            document.querySelectorAll('.example-list li').forEach(item => {
+                item.addEventListener('click', function() {
+                    searchInput.value = this.textContent.replace(/"/g, '');
+                    performSearch();
+                });
+            });
+
+            function performSearch() {
+                const query = searchInput.value.trim();
+                const responseLength = document.getElementById('response-length').value;
+                const searchType = document.getElementById('search-type').value;
+                if (!query) return;
+
+                loadingOverlay.style.display = 'flex';
+                searchResults.style.display = 'none';
+
+                fetch('/api/ai-search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query, search_type: searchType, response_length: responseLength })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    loadingOverlay.style.display = 'none';
+                    if (data.error) { showError(data.error); return; }
+                    showResults(data);
+                })
+                .catch(err => {
+                    loadingOverlay.style.display = 'none';
+                    showError('Search failed: ' + err.message);
+                });
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text || '';
+                return div.innerHTML;
+            }
+
+            function formatResponse(text) {
+                return escapeHtml(text).replace(/\n/g, '<br>');
+            }
+
+            function showResults(data) {
+                const isLive = data.status === 'success';
+                const isQuota = data.status === 'quota_exceeded';
+                const headerLabel = isLive ? 'Gemini AI Response' : (isQuota ? 'Quota limit — backup answer' : 'Backup answer');
+
+                aiResponse.innerHTML = `
+                    ${!isLive ? `<div class="response-warning" style="display:flex;gap:0.75rem;padding:1rem;background:#fff8e6;border:1px solid #f0d080;border-radius:2px;margin-bottom:1rem;font-size:0.9rem;">
+                        <i class="fas fa-exclamation-triangle" style="color:#c8860a;"></i>
+                        <div>${escapeHtml(data.note || 'Gemini is offline or quota exceeded.')}</div>
+                    </div>` : ''}
+                    <div class="response-header">
+                        <i class="fas fa-${isLive ? 'robot' : 'book'}"></i>
+                        <span>${headerLabel}</span>
+                    </div>
+                    <div class="response-text">${formatResponse(data.response)}</div>
+                `;
+
+                responseMeta.innerHTML = `
+                    <div class="meta-item"><strong>Source:</strong> ${isLive ? data.ai_model : 'Fallback'}</div>
+                    <div class="meta-item"><strong>Status:</strong> ${data.status}</div>
+                    <div class="meta-item"><strong>Length:</strong> ${data.response_length || 'n/a'}</div>
+                `;
+
+                searchResults.style.display = 'block';
+                searchResults.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            function showError(message) {
+                aiResponse.innerHTML = `<div class="response-text error">${escapeHtml(message)}</div>`;
+                responseMeta.innerHTML = '';
+                searchResults.style.display = 'block';
+            }
+
+            window.hideResults = function() {
+                searchResults.style.display = 'none';
+            };
+
+            window.setResponseLength = function(length) {
+                document.getElementById('response-length').value = length;
+                document.querySelectorAll('.ai-topic-chip').forEach(chip => {
+                    chip.classList.toggle('active', chip.dataset.length === length);
+                });
+            };
+
+            document.querySelectorAll('.ai-topic-chip').forEach(chip => {
+                const text = chip.textContent.trim().toLowerCase();
+                chip.dataset.length = text.includes('quick') ? 'concise' : (text.includes('depth') ? 'comprehensive' : 'detailed');
+            });
+            window.setResponseLength(document.getElementById('response-length').value);
+        });
+    </script>
+{% endblock %}

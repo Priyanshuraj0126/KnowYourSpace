@@ -1,0 +1,552 @@
+/* Weather & AI Search — clean page layouts */
+
+body.nasa-site.page-light .main-content {
+    background: var(--nasa-off-white);
+    color: var(--nasa-black);
+    padding: 0;
+}
+
+body.nasa-site.page-light .page-shell {
+    max-width: var(--container);
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+}
+
+/* ── Weather ── */
+.weather-location-card {
+    background: var(--nasa-white);
+    border: 1px solid #e8e8e8;
+    border-radius: 2px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.weather-location-card h2 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin: 0 0 0.35rem;
+    letter-spacing: -0.02em;
+}
+
+.weather-location-card > p {
+    color: var(--nasa-gray-700);
+    font-size: 0.95rem;
+    margin: 0 0 1.5rem;
+}
+
+.weather-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 1rem;
+    align-items: end;
+}
+
+.weather-form-full {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.weather-field label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--nasa-gray-700);
+    margin-bottom: 0.35rem;
+}
+
+.weather-field input {
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 2px;
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+
+.weather-field input:focus {
+    outline: none;
+    border-color: var(--nasa-black);
+}
+
+.weather-btn-row {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.weather-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: inherit;
+    border: 1px solid #d0d0d0;
+    background: var(--nasa-white);
+    color: var(--nasa-black);
+    transition: border-color 0.2s;
+}
+
+.weather-btn:hover {
+    border-color: var(--nasa-black);
+}
+
+.weather-btn--primary {
+    background: var(--nasa-red);
+    color: var(--nasa-white);
+    border-color: var(--nasa-red);
+}
+
+.weather-btn--primary:hover {
+    background: var(--nasa-red-hover);
+    border-color: var(--nasa-red-hover);
+}
+
+.weather-dashboard {
+    display: none;
+}
+
+.weather-dashboard.visible {
+    display: block;
+}
+
+.weather-score-banner {
+    background: var(--nasa-black);
+    color: var(--nasa-white);
+    border-radius: 2px;
+    padding: 2rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.weather-score-banner h3 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+    margin: 0 0 0.35rem;
+}
+
+.weather-score-value {
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.weather-score-rec {
+    font-size: 1rem;
+    max-width: 360px;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.5;
+}
+
+.weather-cards-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.weather-data-card {
+    background: var(--nasa-white);
+    border: 1px solid #e8e8e8;
+    border-radius: 2px;
+    padding: 1.5rem;
+}
+
+.weather-data-card h4 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--nasa-gray-700);
+    margin: 0 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.weather-data-card h4 i {
+    color: var(--nasa-red);
+}
+
+.weather-data-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem 1.5rem;
+}
+
+.weather-data-item .label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--nasa-gray-700);
+    margin-bottom: 0.15rem;
+}
+
+.weather-data-item .value {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--nasa-black);
+}
+
+.weather-forecast-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.weather-forecast-day {
+    background: var(--nasa-white);
+    border: 1px solid #e8e8e8;
+    border-radius: 2px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.weather-forecast-day .day {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--nasa-gray-700);
+}
+
+.weather-forecast-day .temp {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin: 0.35rem 0;
+}
+
+/* Override old dark weather styles on light page */
+body.nasa-site.page-light .section-title {
+    color: var(--nasa-black);
+    text-align: left;
+    font-size: 1.35rem;
+    text-transform: none;
+}
+
+body.nasa-site.page-light .section-subtitle {
+    color: var(--nasa-gray-700);
+    text-align: left;
+    margin-bottom: 0;
+}
+
+body.nasa-site.page-light .location-section,
+body.nasa-site.page-light .current-weather-section,
+body.nasa-site.page-light .forecast-section,
+body.nasa-site.page-light .final-cta-section {
+    margin: 0;
+    padding: 0;
+}
+
+body.nasa-site.page-light .weather-card {
+    background: var(--nasa-white);
+    border: 1px solid #e8e8e8;
+    color: var(--nasa-black);
+}
+
+/* ── AI Search ── */
+.ai-search-shell {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+}
+
+.ai-search-panel {
+    background: var(--nasa-white);
+    border: 1px solid #e8e8e8;
+    border-radius: 2px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.ai-search-panel h2 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin: 0 0 0.35rem;
+    letter-spacing: -0.02em;
+}
+
+.ai-search-panel > p {
+    color: var(--nasa-gray-700);
+    font-size: 0.95rem;
+    margin: 0 0 1.5rem;
+}
+
+.ai-search-input-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.ai-search-input-row input {
+    flex: 1;
+    padding: 0.85rem 1rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 2px;
+    background: var(--nasa-white);
+    color: var(--nasa-black);
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.ai-search-input-row input::placeholder {
+    color: var(--nasa-gray-700);
+}
+
+.ai-search-input-row input:focus {
+    outline: none;
+    border-color: var(--nasa-black);
+    background: var(--nasa-white);
+    color: var(--nasa-black);
+}
+
+.ai-search-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.25rem;
+    background: var(--nasa-red);
+    color: var(--nasa-white);
+    border: none;
+    border-radius: 2px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.ai-search-submit:hover {
+    background: var(--nasa-red-hover);
+}
+
+.ai-search-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.ai-search-options label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--nasa-gray-700);
+    margin-bottom: 0.35rem;
+}
+
+.ai-search-options select {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 2px;
+    background: var(--nasa-white);
+    color: var(--nasa-black);
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.ai-search-options select:focus {
+    outline: none;
+    border-color: var(--nasa-black);
+    background: var(--nasa-white);
+    color: var(--nasa-black);
+}
+
+.ai-search-options select option {
+    background: var(--nasa-white);
+    color: var(--nasa-black);
+}
+
+.ai-search-panel .search-input,
+.ai-search-panel .search-select {
+    background: var(--nasa-white) !important;
+    color: var(--nasa-black) !important;
+    -webkit-text-fill-color: var(--nasa-black);
+}
+
+.ai-search-panel .search-input::placeholder {
+    color: var(--nasa-gray-700) !important;
+    -webkit-text-fill-color: var(--nasa-gray-700);
+}
+
+.ai-topic-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.ai-topic-chip {
+    padding: 0.4rem 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid #d0d0d0;
+    border-radius: 999px;
+    background: var(--nasa-off-white);
+    color: var(--nasa-black);
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.ai-topic-chip:hover {
+    border-color: var(--nasa-black);
+    background: var(--nasa-white);
+}
+
+.ai-topic-chip.active {
+    background: var(--nasa-black);
+    border-color: var(--nasa-black);
+    color: var(--nasa-white);
+}
+
+.ai-examples-section {
+    margin-top: 2rem;
+}
+
+.ai-examples-section h3 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--nasa-gray-700);
+    margin: 0 0 1rem;
+}
+
+.ai-example-groups {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.ai-example-group {
+    background: var(--nasa-white);
+    border: 1px solid #e8e8e8;
+    border-radius: 2px;
+    padding: 1.25rem;
+}
+
+.ai-example-group h4 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin: 0 0 0.75rem;
+    color: var(--nasa-black);
+}
+
+.ai-example-group li {
+    font-size: 0.85rem;
+    color: var(--nasa-gray-700);
+    padding: 0.4rem 0;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    list-style: none;
+    line-height: 1.4;
+}
+
+.ai-example-group li:last-child {
+    border-bottom: none;
+}
+
+.ai-example-group li:hover {
+    color: var(--nasa-red);
+}
+
+.ai-example-group ul {
+    margin: 0;
+    padding: 0;
+}
+
+/* AI status banner on light page */
+body.nasa-site.page-light .ai-status-banner {
+    margin-bottom: 1rem;
+    border-radius: 2px;
+}
+
+body.nasa-site.page-light .ai-status-live {
+    background: rgba(46, 204, 113, 0.08);
+    border: 1px solid rgba(46, 204, 113, 0.35);
+    color: #1a8a4a;
+}
+
+body.nasa-site.page-light .ai-status-offline,
+body.nasa-site.page-light .ai-status-checking {
+    background: var(--nasa-white);
+    border: 1px solid #e8e8e8;
+    color: var(--nasa-gray-700);
+}
+
+/* Search results on light bg */
+body.nasa-site.page-light .search-results-section {
+    background: var(--nasa-off-white);
+    padding: 2rem 1.5rem;
+}
+
+body.nasa-site.page-light .results-container {
+    max-width: 820px;
+    margin: 0 auto;
+    background: var(--nasa-white);
+    border: 1px solid #e8e8e8;
+    border-radius: 2px;
+    padding: 2rem;
+}
+
+body.nasa-site.page-light .response-text {
+    color: var(--nasa-gray-900);
+    line-height: 1.75;
+}
+
+body.nasa-site.page-light .response-header span {
+    color: var(--nasa-black);
+}
+
+body.nasa-site.page-light .meta-item {
+    background: var(--nasa-off-white);
+    color: var(--nasa-gray-700);
+    border-radius: 2px;
+}
+
+body.nasa-site.page-light .loading-overlay {
+    background: rgba(255, 255, 255, 0.85);
+}
+
+body.nasa-site.page-light .loading-content {
+    color: var(--nasa-black);
+}
+
+@media (max-width: 768px) {
+    .weather-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .weather-cards-row {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-search-options {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-example-groups {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-search-input-row {
+        flex-direction: column;
+    }
+}

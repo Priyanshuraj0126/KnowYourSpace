@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Profile — KnowYourSpace{% endblock %}
+{% block body_class %}profile-page{% endblock %}
+{% block main_class %}main-content page-inner{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block hero %}
+<header class="hero hero--short">
+    <div class="hero-background" style="background-image: url('https://images.unsplash.com/photo-1454789548928-9efd52dc01ab?w=1920&q=80');"></div>
+    <div class="hero-content">
+        <p class="hero-eyebrow">Your Journey</p>
+        <h1 class="hero-title">Profile</h1>
+        <p class="hero-subtitle">Track your exploration stats, favorites, and achievements.</p>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="profile-shell">
+    <div class="profile-top">
+        <div class="profile-top-avatar">
+            <i class="fas fa-user-astronaut"></i>
+        </div>
+        <div class="profile-top-info">
+            <h2 id="profile-username">Loading...</h2>
+            <div class="profile-top-meta">
+                <span><i class="fas fa-envelope"></i><span id="profile-email">Loading...</span></span>
+                <span><i class="fas fa-map-marker-alt"></i><span id="profile-location">Loading...</span></span>
+                <span><i class="fas fa-calendar"></i><span id="profile-member-since">Loading...</span></span>
+            </div>
+        </div>
+        <div class="profile-top-actions">
+            <button class="profile-action-btn profile-action-btn--primary" onclick="openEditModal()">
+                <i class="fas fa-edit"></i> Edit Profile
+            </button>
+            <button class="profile-action-btn profile-action-btn--ghost" onclick="openSettingsModal()">
+                <i class="fas fa-cog"></i> Settings
+            </button>
+        </div>
+    </div>
+
+    <div class="profile-stats-row">
+        <div class="profile-stat">
+            <div class="profile-stat-value" id="stats-explored">0</div>
+            <div class="profile-stat-label">Objects Explored</div>
+        </div>
+        <div class="profile-stat">
+            <div class="profile-stat-value" id="stats-events">0</div>
+            <div class="profile-stat-label">Events Tracked</div>
+        </div>
+        <div class="profile-stat">
+            <div class="profile-stat-value" id="stats-ai-questions">0</div>
+            <div class="profile-stat-label">AI Questions</div>
+        </div>
+        <div class="profile-stat">
+            <div class="profile-stat-value" id="stats-favorites">0</div>
+            <div class="profile-stat-label">Favorites</div>
+        </div>
+    </div>
+
+    <div class="profile-panel">
+        <div class="profile-tabs-bar tab-navigation">
+            <button class="profile-tab tab-btn active" data-tab="overview"><i class="fas fa-home"></i> Overview</button>
+            <button class="profile-tab tab-btn" data-tab="favorites"><i class="fas fa-heart"></i> Favorites</button>
+            <button class="profile-tab tab-btn" data-tab="activity"><i class="fas fa-chart-line"></i> Activity</button>
+            <button class="profile-tab tab-btn" data-tab="achievements"><i class="fas fa-trophy"></i> Achievements</button>
+            <button class="profile-tab tab-btn" data-tab="search-history"><i class="fas fa-search"></i> History</button>
+        </div>
+
+        <div class="profile-tab-body tab-content">
+            <div class="profile-tab-pane tab-pane active" id="overview-tab">
+                <h3>Quick Stats</h3>
+                <div class="profile-quick-stats">
+                    <div class="profile-quick-item">
+                        <span class="label">Member for</span>
+                        <span class="value" id="member-days">0 days</span>
+                    </div>
+                    <div class="profile-quick-item">
+                        <span class="label">Pages visited</span>
+                        <span class="value" id="pages-visited">0</span>
+                    </div>
+                    <div class="profile-quick-item">
+                        <span class="label">Total searches</span>
+                        <span class="value" id="total-searches">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-tab-pane tab-pane" id="favorites-tab">
+                <div class="profile-list-header">
+                    <h3>Your Favorites</h3>
+                    <button class="profile-list-btn" onclick="openAddFavoriteModal()">
+                        <i class="fas fa-plus"></i> Add Favorite
+                    </button>
+                </div>
+                <div class="profile-favorites-grid" id="favorites-grid">
+                    <div class="loading-spinner">Loading favorites...</div>
+                </div>
+            </div>
+
+            <div class="profile-tab-pane tab-pane" id="activity-tab">
+                <div class="profile-list-header">
+                    <h3>Activity Timeline</h3>
+                    <select id="activity-filter" onchange="filterActivities()">
+                        <option value="all">All Activities</option>
+                        <option value="page_visit">Page Visits</option>
+                        <option value="ai_search">AI Searches</option>
+                        <option value="event_view">Event Views</option>
+                        <option value="object_explore">Object Exploration</option>
+                    </select>
+                </div>
+                <div id="activity-timeline">
+                    <div class="loading-spinner">Loading activities...</div>
+                </div>
+            </div>
+
+            <div class="profile-tab-pane tab-pane" id="achievements-tab">
+                <div class="profile-list-header">
+                    <h3>Achievements</h3>
+                    <span style="font-size:0.85rem;color:var(--nasa-gray-700);">
+                        <span id="achievements-count">0</span> / <span id="total-achievements">5</span> unlocked
+                    </span>
+                </div>
+                <div class="profile-achievements-grid" id="achievements-grid">
+                    <div class="loading-spinner">Loading achievements...</div>
+                </div>
+            </div>
+
+            <div class="profile-tab-pane tab-pane" id="search-history-tab">
+                <div class="profile-list-header">
+                    <h3>Search History</h3>
+                    <button class="profile-list-btn profile-list-btn--danger" onclick="clearSearchHistory()">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                </div>
+                <div id="search-history-list">
+                    <div class="loading-spinner">Loading search history...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block after_main %}
+    <div class="modal" id="edit-profile-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Profile</h3>
+                <button class="close-btn" onclick="closeEditModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-profile-form">
+                    <div class="form-group">
+                        <label for="edit-username">Username</label>
+                        <input type="text" id="edit-username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-email">Email</label>
+                        <input type="email" id="edit-email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-location">Location</label>
+                        <input type="text" id="edit-location" name="location" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="cancel-btn" onclick="closeEditModal()">Cancel</button>
+                        <button type="submit" class="save-btn">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="add-favorite-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Favorite</h3>
+                <button class="close-btn" onclick="closeAddFavoriteModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-favorite-form">
+                    <div class="form-group">
+                        <label for="favorite-title">Title</label>
+                        <input type="text" id="favorite-title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="favorite-type">Type</label>
+                        <select id="favorite-type" name="type" required>
+                            <option value="space_object">Space Object</option>
+                            <option value="event">Astronomical Event</option>
+                            <option value="discovery">Discovery</option>
+                            <option value="mission">Space Mission</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="favorite-description">Description</label>
+                        <textarea id="favorite-description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="cancel-btn" onclick="closeAddFavoriteModal()">Cancel</button>
+                        <button type="submit" class="save-btn">Add</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Settings</h3>
+                <button class="close-btn" onclick="closeSettingsModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <div class="setting-item">
+                        <label for="theme-select">Theme</label>
+                        <select id="theme-select" onchange="updateSetting('theme', this.value)">
+                            <option value="dark">Dark</option>
+                            <option value="light">Light</option>
+                            <option value="auto">Auto</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="units-select">Units</label>
+                        <select id="units-select" onchange="updateSetting('units', this.value)">
+                            <option value="metric">Metric</option>
+                            <option value="imperial">Imperial</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="notifications-toggle" onchange="updateSetting('notifications', this.checked)">
+                            Enable Notifications
+                        </label>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" onclick="closeSettingsModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+{% endblock %}

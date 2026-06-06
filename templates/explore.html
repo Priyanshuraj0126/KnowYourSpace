@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Explore — KnowYourSpace{% endblock %}
+
+{% block hero %}
+<header class="hero hero--short explore-hero">
+    <div class="hero-background" style="background-image: url('https://images.unsplash.com/photo-1464802686167-b939a6910659?w=1920&q=80');"></div>
+    <div class="hero-content">
+        <p class="hero-eyebrow">Space Exploration</p>
+        <h1 class="hero-title">Explore Space</h1>
+        <p class="hero-subtitle">Discover planets, asteroids, and cosmic phenomena with real-time NASA data and stunning imagery.</p>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<section class="nasa-section">
+    <div class="nasa-container">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Space Exploration Tools</h2>
+                <p class="section-subtitle">Access NASA's latest discoveries and explore the cosmos with our interactive tools.</p>
+            </div>
+        </div>
+        <div class="cards-grid">
+            <div class="card">
+                <h3 class="card-title">Astronomy Picture of the Day</h3>
+                <p class="card-description">Discover NASA's stunning daily space images with detailed explanations.</p>
+                <ul class="card-list">
+                    <li>High-resolution space photography</li>
+                    <li>Expert astronomical explanations</li>
+                    <li>Daily updates from NASA</li>
+                </ul>
+                <a href="/apod" class="hero-button nasa-cta">View APOD <span class="nasa-arrow"><i class="fas fa-arrow-right"></i></span></a>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Near-Earth Objects</h3>
+                <p class="card-description">Track asteroids and comets that approach Earth with real-time data.</p>
+                <ul class="card-list">
+                    <li>Real-time asteroid tracking</li>
+                    <li>Close approach predictions</li>
+                    <li>Size and velocity data</li>
+                </ul>
+                <a href="/neo" class="hero-button nasa-cta">Track NEOs <span class="nasa-arrow"><i class="fas fa-arrow-right"></i></span></a>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Mars Rover Photos</h3>
+                <p class="card-description">Explore the Red Planet through the eyes of NASA's Mars rovers.</p>
+                <ul class="card-list">
+                    <li>Latest Mars surface images</li>
+                    <li>Rover mission updates</li>
+                    <li>Martian landscape exploration</li>
+                </ul>
+                <a href="/mars" class="hero-button nasa-cta">Explore Mars <span class="nasa-arrow"><i class="fas fa-arrow-right"></i></span></a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="nasa-section nasa-section--gray">
+    <div class="nasa-container">
+        <h2 class="section-title">Data Sources</h2>
+        <div class="tech-grid" style="margin-top: 2rem;">
+            <div class="tech-item" style="border-top-color: var(--nasa-red);">
+                <h3 style="color: var(--nasa-black);">NASA Open APIs</h3>
+                <p style="color: var(--nasa-gray-700);">Access real-time data from NASA's extensive space exploration programs and research databases.</p>
+            </div>
+            <div class="tech-item" style="border-top-color: var(--nasa-red);">
+                <h3 style="color: var(--nasa-black);">Mars Vista</h3>
+                <p style="color: var(--nasa-gray-700);">High-resolution rover imagery from Curiosity and Perseverance on the Martian surface.</p>
+            </div>
+            <div class="tech-item" style="border-top-color: var(--nasa-red);">
+                <h3 style="color: var(--nasa-black);">Astronomical Catalogs</h3>
+                <p style="color: var(--nasa-gray-700);">Comprehensive databases of asteroids, comets, and near-Earth object trajectories.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,710 @@
+/* Profile page — clean NASA-style layout */
+
+body.nasa-site.profile-page {
+    background: var(--nasa-off-white);
+}
+
+body.nasa-site.profile-page .main-content {
+    background: var(--nasa-off-white);
+    color: var(--nasa-black);
+    padding: 0;
+}
+
+body.nasa-site.profile-page .page-inner {
+    padding: 0;
+    max-width: 100%;
+}
+
+/* Kill global glow bleed from main.css */
+body.nasa-site.profile-page .stat-number,
+body.nasa-site.profile-page .stat-label {
+    text-shadow: none !important;
+    -webkit-text-stroke: 0 !important;
+    filter: none !important;
+}
+
+.profile-shell {
+    max-width: var(--container);
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+}
+
+.profile-top {
+    background: var(--nasa-white);
+    border: 1px solid #e8e8e8;
+    border-radius: 2px;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+.profile-top-avatar {
+    width: 72px;
+    height: 72px;
+    background: var(--nasa-black);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--nasa-white);
+    font-size: 1.75rem;
+    flex-shrink: 0;
+}
+
+.profile-top-info {
+    flex: 1;
+    min-width: 200px;
+}
+
+.profile-top-info h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0 0 0.35rem;
+    color: var(--nasa-black);
+    letter-spacing: -0.02em;
+}
+
+.profile-top-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    font-size: 0.9rem;
+    color: var(--nasa-gray-700);
+}
+
+.profile-top-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.profile-top-meta i {
+    color: var(--nasa-gray-400);
+    font-size: 0.8rem;
+}
+
+.profile-top-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.profile-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 2px;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition: background 0.2s, color 0.2s;
+}
+
+.profile-action-btn--primary {
+    background: var(--nasa-red);
+    color: var(--nasa-white);
+}
+
+.profile-action-btn--primary:hover {
+    background: var(--nasa-red-hover);
+}
+
+.profile-action-btn--ghost {
+    background: transparent;
+    color: var(--nasa-black);
+    border: 1px solid #d0d0d0;
+}
+
+.profile-action-btn--ghost:hover {
+    border-color: var(--nasa-black);
+}
+
+.profile-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.profile-stat {
+    background: var(--nasa-white);
+    border: 1px solid #e8e8e8;
+    border-radius: 2px;
+    padding: 1.25rem 1.5rem;
+}
+
+.profile-stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--nasa-black);
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.profile-stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--nasa-gray-700);
+    margin-top: 0.4rem;
+}
+
+.profile-panel {
+    background: var(--nasa-white);
+    border: 1px solid #e8e8e8;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.profile-tabs-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #e8e8e8;
+    overflow-x: auto;
+}
+
+.profile-tab {
+    padding: 1rem 1.25rem;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--nasa-gray-700);
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.profile-tab:hover {
+    color: var(--nasa-black);
+}
+
+.profile-tab.active {
+    color: var(--nasa-black);
+    border-bottom-color: var(--nasa-red);
+}
+
+.profile-tab-body {
+    padding: 1.5rem;
+}
+
+.profile-tab-pane {
+    display: none;
+}
+
+.profile-tab-pane.active {
+    display: block;
+}
+
+.profile-tab-pane h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 1rem;
+    color: var(--nasa-black);
+}
+
+.profile-quick-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.profile-quick-item {
+    padding: 1rem;
+    background: var(--nasa-off-white);
+    border-radius: 2px;
+}
+
+.profile-quick-item .label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--nasa-gray-700);
+    margin-bottom: 0.35rem;
+}
+
+.profile-quick-item .value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--nasa-black);
+}
+
+.profile-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.profile-list-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid #d0d0d0;
+    background: var(--nasa-white);
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.profile-list-btn:hover {
+    border-color: var(--nasa-black);
+}
+
+.profile-list-btn--danger {
+    color: var(--nasa-red);
+    border-color: rgba(252, 61, 33, 0.4);
+}
+
+.profile-empty {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--nasa-gray-700);
+    font-size: 0.9rem;
+}
+
+.profile-empty i {
+    font-size: 2rem;
+    color: var(--nasa-gray-400);
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+/* Favorites grid */
+.profile-favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.profile-fav-card {
+    border: 1px solid #e8e8e8;
+    border-radius: 2px;
+    padding: 1rem;
+    background: var(--nasa-off-white);
+}
+
+.profile-fav-card h4 {
+    font-size: 0.95rem;
+    margin: 0 0 0.35rem;
+}
+
+.profile-fav-card p {
+    font-size: 0.8rem;
+    color: var(--nasa-gray-700);
+    margin: 0;
+}
+
+.profile-fav-type {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--nasa-red);
+    margin-bottom: 0.5rem;
+}
+
+/* Activity timeline */
+.profile-activity-item {
+    display: flex;
+    gap: 1rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.profile-activity-item:last-child {
+    border-bottom: none;
+}
+
+.profile-activity-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--nasa-off-white);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--nasa-gray-700);
+    flex-shrink: 0;
+}
+
+.profile-activity-text {
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+.profile-activity-text strong {
+    color: var(--nasa-black);
+}
+
+.profile-activity-time {
+    font-size: 0.75rem;
+    color: var(--nasa-gray-400);
+    margin-top: 0.2rem;
+}
+
+/* Achievements */
+.profile-achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.profile-achievement {
+    border: 1px solid #e8e8e8;
+    border-radius: 2px;
+    padding: 1.25rem;
+    text-align: center;
+}
+
+.profile-achievement.unlocked {
+    border-color: var(--nasa-black);
+}
+
+.profile-achievement.locked {
+    opacity: 0.45;
+}
+
+.profile-achievement i {
+    font-size: 1.75rem;
+    color: var(--nasa-red);
+    margin-bottom: 0.5rem;
+}
+
+.profile-achievement h4 {
+    font-size: 0.9rem;
+    margin: 0 0 0.25rem;
+}
+
+.profile-achievement p {
+    font-size: 0.75rem;
+    color: var(--nasa-gray-700);
+    margin: 0;
+}
+
+/* Search history */
+.profile-history-item {
+    padding: 0.85rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+}
+
+.profile-history-item:last-child {
+    border-bottom: none;
+}
+
+.profile-history-query {
+    font-weight: 600;
+    color: var(--nasa-black);
+}
+
+.profile-history-meta {
+    font-size: 0.75rem;
+    color: var(--nasa-gray-400);
+    margin-top: 0.2rem;
+}
+
+/* Modals */
+body.nasa-site.profile-page .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+body.nasa-site.profile-page .modal.open {
+    display: flex;
+}
+
+body.nasa-site.profile-page .modal .modal-content {
+    background: var(--nasa-white);
+    border-radius: 2px;
+    width: 100%;
+    max-width: 440px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+body.nasa-site.profile-page .modal .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+body.nasa-site.profile-page .modal .modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+body.nasa-site.profile-page .modal .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: var(--nasa-gray-700);
+}
+
+body.nasa-site.profile-page .modal .modal-body {
+    padding: 1.5rem;
+}
+
+body.nasa-site.profile-page .form-group {
+    margin-bottom: 1rem;
+}
+
+body.nasa-site.profile-page .form-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    color: var(--nasa-gray-700);
+}
+
+body.nasa-site.profile-page .form-group input,
+body.nasa-site.profile-page .form-group select,
+body.nasa-site.profile-page .form-group textarea {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 2px;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+body.nasa-site.profile-page .form-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 1.25rem;
+}
+
+body.nasa-site.profile-page .save-btn {
+    background: var(--nasa-red);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.1rem;
+    font-weight: 600;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+body.nasa-site.profile-page .cancel-btn {
+    background: transparent;
+    border: 1px solid #d0d0d0;
+    padding: 0.6rem 1.1rem;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+body.nasa-site.profile-page .setting-item {
+    margin-bottom: 1rem;
+}
+
+body.nasa-site.profile-page .setting-item label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+}
+
+body.nasa-site.profile-page .setting-item select {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 2px;
+}
+
+body.nasa-site.profile-page .loading-spinner {
+    text-align: center;
+    padding: 2rem;
+    color: var(--nasa-gray-700);
+    font-size: 0.9rem;
+}
+
+body.nasa-site.profile-page #activity-filter {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 2px;
+    font-family: inherit;
+    font-size: 0.875rem;
+}
+
+/* JS-rendered list items */
+body.nasa-site.profile-page .no-data {
+    text-align: center;
+    padding: 2rem;
+    color: var(--nasa-gray-700);
+    font-size: 0.9rem;
+}
+
+body.nasa-site.profile-page .favorite-item {
+    border: 1px solid #e8e8e8;
+    border-radius: 2px;
+    padding: 1rem;
+    background: var(--nasa-off-white);
+}
+
+body.nasa-site.profile-page .favorite-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+}
+
+body.nasa-site.profile-page .favorite-header h4 {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+body.nasa-site.profile-page .remove-favorite-btn {
+    background: none;
+    border: none;
+    color: var(--nasa-gray-400);
+    cursor: pointer;
+}
+
+body.nasa-site.profile-page .favorite-type {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--nasa-red);
+    margin-bottom: 0.35rem;
+}
+
+body.nasa-site.profile-page .favorite-description {
+    font-size: 0.85rem;
+    color: var(--nasa-gray-700);
+}
+
+body.nasa-site.profile-page .favorite-date {
+    font-size: 0.75rem;
+    color: var(--nasa-gray-400);
+    margin-top: 0.5rem;
+}
+
+body.nasa-site.profile-page .timeline-item {
+    display: flex;
+    gap: 1rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+body.nasa-site.profile-page .timeline-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--nasa-off-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    color: var(--nasa-gray-700);
+    flex-shrink: 0;
+}
+
+body.nasa-site.profile-page .timeline-text {
+    font-size: 0.9rem;
+    color: var(--nasa-black);
+}
+
+body.nasa-site.profile-page .timeline-time {
+    font-size: 0.75rem;
+    color: var(--nasa-gray-400);
+    margin-top: 0.2rem;
+}
+
+body.nasa-site.profile-page .achievement-item {
+    border: 1px solid #e8e8e8;
+    border-radius: 2px;
+    padding: 1.25rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+body.nasa-site.profile-page .achievement-item.unlocked {
+    border-color: var(--nasa-black);
+}
+
+body.nasa-site.profile-page .achievement-icon {
+    color: var(--nasa-red);
+    font-size: 1.5rem;
+}
+
+body.nasa-site.profile-page .achievement-content h4 {
+    margin: 0 0 0.25rem;
+    font-size: 0.95rem;
+}
+
+body.nasa-site.profile-page .achievement-content p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--nasa-gray-700);
+}
+
+body.nasa-site.profile-page .achievement-date {
+    font-size: 0.75rem;
+    color: var(--nasa-gray-400);
+    margin-top: 0.35rem;
+}
+
+body.nasa-site.profile-page .search-history-item {
+    padding: 0.85rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+body.nasa-site.profile-page .search-query {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+body.nasa-site.profile-page .search-meta {
+    font-size: 0.75rem;
+    color: var(--nasa-gray-400);
+    margin-top: 0.2rem;
+}
+
+@media (max-width: 768px) {
+    .profile-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .profile-quick-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

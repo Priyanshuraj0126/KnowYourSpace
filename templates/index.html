@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}KnowYourSpace — Explore the Universe{% endblock %}
+
+{% block hero %}
+<header class="hero">
+    <div class="hero-background" style="background-image: url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=1920&q=80');"></div>
+    <div class="hero-content">
+        <p class="hero-eyebrow">For the benefit of all</p>
+        <h1 class="hero-title">Explore the Universe</h1>
+        <p class="hero-subtitle">Discover space data, track astronomical events, and learn about our cosmic neighborhood with AI-powered insights from NASA and beyond.</p>
+        <a href="/explore" class="hero-button nasa-cta">
+            Start Exploring
+            <span class="nasa-arrow"><i class="fas fa-arrow-right"></i></span>
+        </a>
+    </div>
+    <div class="hero-features">
+        <a href="/apod" class="hero-feature">
+            <div class="hero-feature-label">Daily Discovery</div>
+            <div class="hero-feature-title">
+                Astronomy Picture of the Day
+                <span class="nasa-arrow"><i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+        <a href="/events" class="hero-feature">
+            <div class="hero-feature-label">Look Up Tonight</div>
+            <div class="hero-feature-title">
+                Astronomical Events
+                <span class="nasa-arrow"><i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+        <a href="/ai-search" class="hero-feature">
+            <div class="hero-feature-label">Ask Anything</div>
+            <div class="hero-feature-title">
+                AI Space Search
+                <span class="nasa-arrow"><i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<!-- Stats -->
+<section class="nasa-section">
+    <div class="nasa-container">
+        <div class="stats-row">
+            <div class="stat-block">
+                <div class="stat-number">8</div>
+                <div class="stat-label">Planets in Our System</div>
+            </div>
+            <div class="stat-block">
+                <div class="stat-number">100+</div>
+                <div class="stat-label">Tracked Space Objects</div>
+            </div>
+            <div class="stat-block">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Live NASA Data</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Missions grid -->
+<section class="nasa-section nasa-section--gray">
+    <div class="nasa-container">
+        <div class="section-header">
+            <h2 class="section-title">Space Missions</h2>
+            <a href="/explore" class="section-link">
+                Discover More
+                <span class="nasa-arrow"><i class="fas fa-arrow-right"></i></span>
+            </a>
+        </div>
+        <div class="mission-grid">
+            <a href="/apod" class="mission-card">
+                <img src="https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=600&h=800&q=80" alt="Deep space nebula" loading="lazy">
+                <div class="mission-card-overlay">
+                    <span class="mission-card-title">
+                        Astronomy Picture of the Day
+                        <span class="nasa-arrow"><i class="fas fa-arrow-right"></i></span>
+                    </span>
+                </div>
+            </a>
+            <a href="/neo" class="mission-card">
+                <img src="https://images.unsplash.com/photo-1614732414444-096e5f1122d5?auto=format&fit=crop&w=600&h=800&q=80" alt="Asteroid in space" loading="lazy">
+                <div class="mission-card-overlay">
+                    <span class="mission-card-title">
+                        Near-Earth Objects
+                        <span class="nasa-arrow"><i class="fas fa-arrow-right"></i></span>
+                    </span>
+                </div>
+            </a>
+            <a href="/mars" class="mission-card">
+                <img src="https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?auto=format&fit=crop&w=600&h=800&q=80" alt="Mars surface" loading="lazy">
+                <div class="mission-card-overlay">
+                    <span class="mission-card-title">
+                        Mars Rover Photos
+                        <span class="nasa-arrow"><i class="fas fa-arrow-right"></i></span>
+                    </span>
+                </div>
+            </a>
+            <a href="/ai-search" class="mission-card">
+                <img src="https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=600&h=800&q=80" alt="Starry night sky" loading="lazy">
+                <div class="mission-card-overlay">
+                    <span class="mission-card-title">
+                        AI Space Search
+                        <span class="nasa-arrow"><i class="fas fa-arrow-right"></i></span>
+                    </span>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Feature banner: Mars -->
+<section class="feature-banner">
+    <div class="feature-banner-bg" style="background-image: url('https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?w=1920&q=80');"></div>
+    <div class="feature-banner-content">
+        <p class="hero-eyebrow">Red Planet Exploration</p>
+        <h2 class="hero-title">Catching Up With Mars</h2>
+        <p class="hero-subtitle">Browse thousands of photos from NASA's Curiosity and Perseverance rovers, captured on the Martian surface in stunning detail.</p>
+        <a href="/mars" class="hero-button nasa-cta">
+            View Mars Photos
+            <span class="nasa-arrow"><i class="fas fa-arrow-right"></i></span>
+        </a>
+    </div>
+</section>
+
+<!-- Gallery -->
+<section class="nasa-section">
+    <div class="nasa-container">
+        <div class="section-header">
+            <h2 class="section-title">Explore Our Tools</h2>
+        </div>
+        <div class="gallery-grid">
+            <a href="/apod" class="gallery-card">
+                <div class="gallery-card-images">
+                    <img class="gallery-card-main" src="https://images.unsplash.com/photo-1502134249126-9f3755a50d46?w=400&q=80" alt="Space">
+                    <div class="gallery-card-side">
+                        <img src="https://images.unsplash.com/photo-1464802686167-b939a6910659?w=200&q=80" alt="Galaxy">
+                        <img src="https://images.unsplash.com/photo-1454789548928-9efd52dc01ab?w=200&q=80" alt="Nebula">
+                    </div>
+                </div>
+                <div class="gallery-card-title">Astronomy Picture of the Day</div>
+                <div class="gallery-card-meta">Daily NASA imagery</div>
+            </a>
+            <a href="/weather" class="gallery-card">
+                <div class="gallery-card-images">
+                    <img class="gallery-card-main" src="https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=400&h=220&q=80" alt="Night sky" loading="lazy">
+                    <div class="gallery-card-side">
+                        <img src="https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=200&h=108&q=80" alt="Stars" loading="lazy">
+                        <img src="https://images.unsplash.com/photo-1506443432602-ac2fcd6f54e0?auto=format&fit=crop&w=200&h=108&q=80" alt="Milky way" loading="lazy">
+                    </div>
+                </div>
+                <div class="gallery-card-title">Stargazing Weather</div>
+                <div class="gallery-card-meta">Visibility forecasts</div>
+            </a>
+            <a href="/events" class="gallery-card">
+                <div class="gallery-card-images">
+                    <img class="gallery-card-main" src="https://images.unsplash.com/photo-1446776877081-d282a0f896e2?auto=format&fit=crop&w=400&h=220&q=80" alt="Moon" loading="lazy">
+                    <div class="gallery-card-side">
+                        <img src="https://images.unsplash.com/photo-1502134249126-9f3755a50d46?auto=format&fit=crop&w=200&h=108&q=80" alt="Eclipse" loading="lazy">
+                        <img src="https://images.unsplash.com/photo-1464802686167-b939a6910659?auto=format&fit=crop&w=200&h=108&q=80" alt="Meteor shower" loading="lazy">
+                    </div>
+                </div>
+                <div class="gallery-card-title">Astronomical Events</div>
+                <div class="gallery-card-meta">Eclipses &amp; meteor showers</div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Technology -->
+<section class="nasa-section nasa-section--dark">
+    <div class="nasa-container">
+        <h2 class="section-title">Powered by Advanced Technology</h2>
+        <p class="section-subtitle">Real data from the world's leading space and weather agencies, enhanced with AI.</p>
+        <div class="tech-grid" style="margin-top: 3rem;">
+            <div class="tech-item">
+                <h3>NASA APIs</h3>
+                <p>Real-time data from NASA's space exploration programs — APOD, NeoWs, and planetary imagery updated daily.</p>
+            </div>
+            <div class="tech-item">
+                <h3>Open-Meteo</h3>
+                <p>Accurate weather and visibility forecasts to help you plan the perfect stargazing session under clear skies.</p>
+            </div>
+            <div class="tech-item">
+                <h3>Gemini AI</h3>
+                <p>Advanced AI-powered search and Q&amp;A for all your space-related questions, from black holes to exoplanets.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

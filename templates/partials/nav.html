@@ -1,0 +1,32 @@
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="/" class="nav-logo">
+            <i class="fas fa-rocket"></i>
+            <span>KnowYourSpace</span>
+        </a>
+        <button class="nav-toggle" aria-label="Toggle navigation">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/explore" class="nav-link{{ ' active' if request.path.startswith('/explore') or request.path in ['/apod', '/neo', '/mars'] else '' }}">Explore</a>
+            </li>
+            <li class="nav-item">
+                <a href="/events" class="nav-link{{ ' active' if request.path == '/events' else '' }}">Events</a>
+            </li>
+            <li class="nav-item">
+                <a href="/weather" class="nav-link{{ ' active' if request.path == '/weather' else '' }}">Weather</a>
+            </li>
+            <li class="nav-item">
+                <a href="/ai-search" class="nav-link{{ ' active' if request.path in ['/ai-search', '/ai-chat'] else '' }}">
+                    AI Search<span class="nav-badge">LIVE</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/profile" class="nav-link{{ ' active' if request.path == '/profile' else '' }}">Profile</a>
+            </li>
+        </ul>
+    </div>
+</nav>

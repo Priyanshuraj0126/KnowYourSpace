@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Near-Earth Objects — KnowYourSpace{% endblock %}
+{% block main_class %}main-content main-content--dark page-inner{% endblock %}
+
+{% block hero %}
+<header class="hero hero--short neo-hero">
+    <div class="hero-background" style="background-image: url('https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=1920&q=80');"></div>
+    <div class="hero-content">
+        <p class="hero-eyebrow">Planetary Defense</p>
+        <h1 class="hero-title">Near-Earth Objects</h1>
+        <p class="hero-subtitle">Track asteroids and comets that approach Earth with real-time data.</p>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+        <!-- NEO Controls -->
+        <section class="neo-controls-section">
+            <h2 class="section-title">Track Near-Earth Objects</h2>
+            <div class="neo-controls">
+                <div class="control-group">
+                    <label for="start-date">Start Date:</label>
+                    <input type="date" id="start-date" onchange="loadNEOs()">
+                </div>
+                <div class="control-group">
+                    <label for="end-date">End Date:</label>
+                    <input type="date" id="end-date" onchange="loadNEOs()">
+                </div>
+                <button class="control-button" onclick="loadNEOs()">
+                    <i class="fas fa-search"></i>
+                    Track NEOs
+                </button>
+            </div>
+        </section>
+
+        <!-- NEO Display -->
+        <section class="neo-display-section">
+            <div id="neo-container" class="neo-container">
+                <div class="loading-message">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Loading Near-Earth Objects...
+                </div>
+            </div>
+        </section>
+
+        <!-- NEO Information -->
+        <section class="neo-info-section">
+            <h2 class="section-title">About Near-Earth Objects</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <h3>What are NEOs?</h3>
+                    <p>Near-Earth Objects (NEOs) are asteroids and comets whose orbits bring them close to Earth. They range in size from tiny pebbles to large asteroids several kilometers across.</p>
+                </div>
+                <div class="info-item">
+                    <h3>Why Track Them?</h3>
+                    <ul>
+                        <li>Planetary defense</li>
+                        <li>Scientific research</li>
+                        <li>Space exploration opportunities</li>
+                        <li>Understanding solar system formation</li>
+                    </ul>
+                </div>
+                <div class="info-item">
+                    <h3>Classification</h3>
+                    <ul>
+                        <li><strong>Atens:</strong> Cross Earth's orbit</li>
+                        <li><strong>Apollos:</strong> Cross Earth's orbit</li>
+                        <li><strong>Amors:</strong> Approach but don't cross</li>
+                        <li><strong>Potentially Hazardous:</strong> Large and close</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        // Set default dates when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+            
+            document.getElementById('start-date').value = today.toISOString().split('T')[0];
+            document.getElementById('end-date').value = nextWeek.toISOString().split('T')[0];
+            
+            loadNEOs();
+        });
+
+        // Load NEOs based on selected dates
+        async function loadNEOs() {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates');
+                return;
+            }
+
+            const container = document.getElementById('neo-container');
+            container.innerHTML = '<div class="loading-message"><i class="fas fa-spinner fa-spin"></i> Loading Near-Earth Objects...</div>';
+
+            try {
+                const response = await fetch(`/api/neo?start_date=${startDate}&end_date=${endDate}`);
+                const data = await response.json();
+                
+                if (response.ok && data.near_earth_objects) {
+                    displayNEOs(data);
+                } else {
+                    container.innerHTML = `<div class="error-message">Error loading NEOs: ${data.error || 'Unknown error'}</div>`;
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="error-message">Error loading NEOs: ${error.message}</div>`;
+            }
+        }
+
+        // Display NEOs
+        function displayNEOs(data) {
+            const container = document.getElementById('neo-container');
+            const neos = data.near_earth_objects;
+            
+            if (neos.length === 0) {
+                container.innerHTML = '<div class="no-neos">No Near-Earth Objects found for the selected date range.</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="neo-summary">
+                    <h3>${data.element_count} Near-Earth Objects Found</h3>
+                    <p>Date Range: ${document.getElementById('start-date').value} to ${document.getElementById('end-date').value}</p>
+                </div>
+                <div class="neo-grid">
+                    ${neos.map(neo => `
+                        <div class="neo-item ${neo.is_potentially_hazardous_asteroid ? 'hazardous' : ''}">
+                            <div class="neo-header">
+                                <h4>${neo.name}</h4>
+                                ${neo.is_potentially_hazardous_asteroid ? '<span class="hazard-badge">Potentially Hazardous</span>' : ''}
+                            </div>
+                            <div class="neo-details">
+                                <p><strong>ID:</strong> ${neo.id}</p>
+                                <p><strong>Absolute Magnitude:</strong> ${neo.absolute_magnitude_h}</p>
+                                <p><strong>Date:</strong> ${neo.date}</p>
+                            </div>
+                            <div class="neo-approach">
+                                <h5>Close Approach Data:</h5>
+                                ${neo.close_approach_data.map(approach => `
+                                    <div class="approach-item">
+                                        <p><strong>Date:</strong> ${approach.close_approach_date}</p>
+                                        <p><strong>Distance:</strong> ${parseFloat(approach.miss_distance.kilometers).toLocaleString()} km</p>
+                                        <p><strong>Velocity:</strong> ${parseFloat(approach.relative_velocity.kilometers_per_second).toFixed(2)} km/s</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="neo-actions">
+                                <a href="${neo.nasa_jpl_url}" target="_blank" class="neo-button">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    View on NASA JPL
+                                </a>
+                                <button class="neo-button" onclick="getNEODetails('${neo.id}')">
+                                    <i class="fas fa-info-circle"></i>
+                                    More Details
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Get detailed NEO information
+        async function getNEODetails(neoId) {
+            try {
+                const response = await fetch(`/api/neo/lookup/${neoId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNEOModal(data);
+                } else {
+                    alert('Error loading NEO details: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error loading NEO details: ' + error.message);
+            }
+        }
+
+        // Show NEO details modal
+        function showNEOModal(neoData) {
+            const modal = document.createElement('div');
+            modal.className = 'neo-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close-modal" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                    <h2>${neoData.name}</h2>
+                    <div class="neo-detail-grid">
+                        <div class="detail-section">
+                            <h3>Basic Information</h3>
+                            <p><strong>ID:</strong> ${neoData.id}</p>
+                            <p><strong>Absolute Magnitude:</strong> ${neoData.absolute_magnitude_h}</p>
+                            <p><strong>Potentially Hazardous:</strong> ${neoData.is_potentially_hazardous_asteroid ? 'Yes' : 'No'}</p>
+                        </div>
+                        <div class="detail-section">
+                            <h3>Estimated Diameter</h3>
+                            ${Object.entries(neoData.estimated_diameter).map(([unit, data]) => `
+                                <p><strong>${unit.toUpperCase()}:</strong> ${data.estimated_diameter_min.toFixed(2)} - ${data.estimated_diameter_max.toFixed(2)} km</p>
+                            `).join('')}
+                        </div>
+                        <div class="detail-section">
+                            <h3>Close Approach Data</h3>
+                            ${neoData.close_approach_data.map(approach => `
+                                <div class="approach-detail">
+                                    <p><strong>Date:</strong> ${approach.close_approach_date}</p>
+                                    <p><strong>Distance:</strong> ${parseFloat(approach.miss_distance.kilometers).toLocaleString()} km</p>
+                                    <p><strong>Velocity:</strong> ${parseFloat(approach.relative_velocity.kilometers_per_second).toFixed(2)} km/s</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <a href="${neoData.nasa_jpl_url}" target="_blank" class="neo-button">
+                            <i class="fas fa-external-link-alt"></i>
+                            View on NASA JPL
+                        </a>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+    </script>
+{% endblock %}
