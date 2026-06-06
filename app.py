@@ -3530,4 +3530,5 @@ if __name__ == '__main__':
             )
         threading.Thread(target=prefetch_todays_apod, daemon=True).start()
         refill_random_apod_pool(RANDOM_POOL_TARGET)
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
