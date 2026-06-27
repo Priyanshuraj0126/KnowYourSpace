@@ -38,7 +38,7 @@ A stunning, modern space exploration and learning platform featuring a cosmic de
 - **NASA Open APIs**: Astronomy Picture of the Day, Near Earth Objects, Mars Rover Photos
 - **Open Meteo API**: Weather and visibility data for stargazing
 - **Google Gemini Pro**: AI-powered space Q&A system
-- **Supabase**: User authentication and data storage (configured but temporarily disabled)
+- **Firebase**: User authentication and data storage (configured but temporarily disabled)
 
 ### **Design System**
 - **Color Palette**: Dark cosmic theme with purple, blue, and orange accents
