@@ -38,6 +38,7 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 GEMINI_AVAILABLE = False
 GEMINI_ACTIVE_MODEL = None
 GEMINI_MODEL_CHAIN = []
+GEMINI_REQUEST_TIMEOUT = float(os.getenv('GEMINI_REQUEST_TIMEOUT', '20'))
 model = None
 
 FIREBASE_AVAILABLE = False
@@ -114,7 +115,10 @@ def generate_gemini_content(prompt):
     for model_name in GEMINI_MODEL_CHAIN:
         try:
             gemini_model = genai.GenerativeModel(model_name)
-            response = gemini_model.generate_content(prompt)
+            response = gemini_model.generate_content(
+                prompt,
+                request_options={'timeout': GEMINI_REQUEST_TIMEOUT},
+            )
             return response.text.strip(), model_name
         except Exception as e:
             last_error = e
@@ -1186,7 +1190,7 @@ def geocode_place():
 def ai_search_api():
     """AI-powered search using Gemini Pro"""
     try:
-        data = request.get_json()
+        data = request.get_json() or {}
         query = data.get('query', '').strip()
         search_type = data.get('search_type', 'general')
         response_length = data.get('response_length', 'detailed')
@@ -1243,16 +1247,20 @@ def ai_search_api():
                     'note': 'AI quota exceeded for today, showing fallback response. Try again tomorrow or upgrade your plan.'
                 })
             else:
-                # For other errors, try to return the actual error instead of fallback
+                fallback_response = get_fallback_response(
+                    query,
+                    search_type,
+                    response_length,
+                )
                 return jsonify({
                     'query': query,
-                    'response': f"AI service encountered an error: {error_message[:200]}... Please try again or contact support if the issue persists.",
+                    'response': fallback_response,
                     'search_type': search_type,
                     'response_length': response_length,
-                    'ai_model': 'Gemini Pro',
+                    'ai_model': 'Fallback System',
                     'timestamp': datetime.now().isoformat(),
-                    'status': 'error',
-                    'note': f'Error details: {error_message[:100]}...'
+                    'status': 'fallback',
+                    'note': 'Live AI took too long to respond. Showing a backup answer instead.'
                 })
             
     except Exception as e:
