@@ -60,23 +60,38 @@ if firebase_admin:
         firebase_service_account = os.getenv('FIREBASE_SERVICE_ACCOUNT_JSON')
         firebase_service_account_path = os.getenv('FIREBASE_SERVICE_ACCOUNT_PATH')
         firebase_project_id = os.getenv('FIREBASE_PROJECT_ID')
+        firebase_cred = None
 
         if firebase_service_account:
-            firebase_cred = credentials.Certificate(json.loads(firebase_service_account))
+            try:
+                firebase_cred = credentials.Certificate(json.loads(firebase_service_account))
+            except Exception as credential_error:
+                print(
+                    f"Firebase service-account JSON is invalid; using public-key verification: {credential_error}"
+                )
         elif firebase_service_account_path:
             firebase_service_account_file = os.path.abspath(firebase_service_account_path)
-            if not os.path.exists(firebase_service_account_file):
-                raise FileNotFoundError(f"Firebase service account file not found: {firebase_service_account_file}")
-            firebase_cred = credentials.Certificate(firebase_service_account_file)
-        else:
+            if os.path.exists(firebase_service_account_file):
+                firebase_cred = credentials.Certificate(firebase_service_account_file)
+            else:
+                print(
+                    "Firebase service-account file is unavailable; using public-key verification."
+                )
+
+        if not firebase_project_id:
             raise RuntimeError(
-                "Set FIREBASE_SERVICE_ACCOUNT_PATH or FIREBASE_SERVICE_ACCOUNT_JSON for server token verification."
+                "Set FIREBASE_PROJECT_ID for server token verification."
             )
 
         if not firebase_admin._apps:
-            firebase_admin.initialize_app(firebase_cred, {'projectId': firebase_project_id} if firebase_project_id else None)
+            firebase_options = {'projectId': firebase_project_id}
+            if firebase_cred:
+                firebase_admin.initialize_app(firebase_cred, firebase_options)
+            else:
+                firebase_admin.initialize_app(options=firebase_options)
         FIREBASE_AVAILABLE = True
-        print("Firebase authentication available with service account credentials")
+        verification_mode = "service-account credentials" if firebase_cred else "Firebase public keys"
+        print(f"Firebase authentication available with {verification_mode}")
     except Exception as e:
         FIREBASE_AUTH_ERROR = str(e)
         print(f"Firebase authentication unavailable: {e}")
@@ -382,12 +397,16 @@ def index():
 
 @app.route('/login')
 def login():
+    if 'email' in request.args or 'password' in request.args:
+        return redirect(url_for('login'))
     if session.get('user_id'):
         return redirect(url_for('profile'))
     return render_template('auth.html', mode='login', firebase_config=FIREBASE_WEB_CONFIG)
 
 @app.route('/signup')
 def signup():
+    if 'email' in request.args or 'password' in request.args:
+        return redirect(url_for('signup'))
     if session.get('user_id'):
         return redirect(url_for('profile'))
     return render_template('auth.html', mode='signup', firebase_config=FIREBASE_WEB_CONFIG)

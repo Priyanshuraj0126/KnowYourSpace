@@ -13,6 +13,15 @@ const message = document.getElementById('auth-message');
 const googleButton = document.getElementById('google-auth-button');
 const config = window.KYS_FIREBASE_CONFIG || {};
 
+const currentUrl = new URL(window.location.href);
+let removedSensitiveQuery = false;
+['email', 'password'].forEach((key) => {
+    removedSensitiveQuery = currentUrl.searchParams.delete(key) || removedSensitiveQuery;
+});
+if (removedSensitiveQuery) {
+    window.history.replaceState({}, document.title, `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
+}
+
 function showMessage(text, type = 'error') {
     message.hidden = false;
     message.textContent = text;
