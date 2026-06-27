@@ -13,6 +13,8 @@ import re
 import html as html_module
 import threading
 from functools import wraps
+from google.auth.transport.requests import Request as GoogleAuthRequest
+from google.oauth2 import id_token as google_id_token
 
 try:
     import firebase_admin
@@ -380,7 +382,21 @@ def decode_firebase_token_for_development(id_token):
 
 def verify_firebase_id_token(id_token):
     try:
-        return firebase_auth.verify_id_token(id_token)
+        decoded_token = google_id_token.verify_firebase_token(
+            id_token,
+            GoogleAuthRequest(),
+            audience=FIREBASE_PROJECT_ID,
+        )
+        expected_issuer = f'https://securetoken.google.com/{FIREBASE_PROJECT_ID}'
+        if decoded_token.get('iss') != expected_issuer:
+            raise ValueError('Firebase ID token issuer does not match this Firebase project')
+
+        uid = decoded_token.get('sub')
+        if not uid or len(uid) > 128:
+            raise ValueError('Firebase ID token does not include a valid user id')
+
+        decoded_token['uid'] = uid
+        return decoded_token
     except Exception as error:
         if is_google_cert_fetch_error(error):
             print(
@@ -441,11 +457,6 @@ def create_auth_session():
             error_message = (
                 'The server could not reach Google public certs to verify the Firebase token. '
                 'Local development fallback is enabled only when FLASK_ENV=development.'
-            )
-        elif 'Application Default Credentials' in error_message:
-            error_message = (
-                'Firebase server credentials are not using the local service-account file. '
-                'Restart Flask after setting FIREBASE_SERVICE_ACCOUNT_PATH=instance/firebase-service-account.json.'
             )
         return jsonify({'error': f'Firebase authentication failed: {error_message}'}), 401
 
