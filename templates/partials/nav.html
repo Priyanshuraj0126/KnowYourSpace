@@ -24,9 +24,21 @@
                     AI Search<span class="nav-badge">LIVE</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="/profile" class="nav-link{{ ' active' if request.path == '/profile' else '' }}">Profile</a>
-            </li>
+            {% if session.get('user_id') %}
+                <li class="nav-item">
+                    <a href="/profile" class="nav-link{{ ' active' if request.path == '/profile' else '' }}">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/logout" class="nav-link">Logout</a>
+                </li>
+            {% else %}
+                <li class="nav-item">
+                    <a href="/login" class="nav-link{{ ' active' if request.path == '/login' else '' }}">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/signup" class="nav-link{{ ' active' if request.path == '/signup' else '' }}">Sign Up</a>
+                </li>
+            {% endif %}
         </ul>
     </div>
 </nav>

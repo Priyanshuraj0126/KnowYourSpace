@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, session, url_for
 import os
 from dotenv import load_dotenv
 import requests
@@ -7,16 +7,29 @@ warnings.filterwarnings('ignore', category=FutureWarning)
 import google.generativeai as genai
 from datetime import datetime, timedelta
 import json
+import base64
 import time
 import re
 import html as html_module
 import threading
+from functools import wraps
+
+try:
+    import firebase_admin
+    from firebase_admin import auth as firebase_auth, credentials
+except ImportError:
+    firebase_admin = None
+    firebase_auth = None
+    credentials = None
 
 # Load environment variables
 load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
+app.secret_key = os.getenv('FLASK_SECRET_KEY') or os.getenv('SECRET_KEY') or 'dev-secret-change-me'
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.jinja_env.auto_reload = True
 
 # Configure Gemini AI
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
@@ -24,6 +37,49 @@ GEMINI_AVAILABLE = False
 GEMINI_ACTIVE_MODEL = None
 GEMINI_MODEL_CHAIN = []
 model = None
+
+FIREBASE_AVAILABLE = False
+FIREBASE_WEB_CONFIG = {
+    'apiKey': os.getenv('FIREBASE_API_KEY', ''),
+    'authDomain': os.getenv('FIREBASE_AUTH_DOMAIN', ''),
+    'projectId': os.getenv('FIREBASE_PROJECT_ID', ''),
+    'appId': os.getenv('FIREBASE_APP_ID', ''),
+    'storageBucket': os.getenv('FIREBASE_STORAGE_BUCKET', ''),
+    'messagingSenderId': os.getenv('FIREBASE_MESSAGING_SENDER_ID', ''),
+    'measurementId': os.getenv('FIREBASE_MEASUREMENT_ID', ''),
+}
+FIREBASE_AUTH_ERROR = None
+FIREBASE_PROJECT_ID = os.getenv('FIREBASE_PROJECT_ID', '')
+ALLOW_DEV_FIREBASE_TOKEN_FALLBACK = (
+    os.getenv('ALLOW_DEV_FIREBASE_TOKEN_FALLBACK', 'false').lower() == 'true'
+    and os.getenv('FLASK_ENV', 'development').lower() != 'production'
+)
+
+if firebase_admin:
+    try:
+        firebase_service_account = os.getenv('FIREBASE_SERVICE_ACCOUNT_JSON')
+        firebase_service_account_path = os.getenv('FIREBASE_SERVICE_ACCOUNT_PATH')
+        firebase_project_id = os.getenv('FIREBASE_PROJECT_ID')
+
+        if firebase_service_account:
+            firebase_cred = credentials.Certificate(json.loads(firebase_service_account))
+        elif firebase_service_account_path:
+            firebase_service_account_file = os.path.abspath(firebase_service_account_path)
+            if not os.path.exists(firebase_service_account_file):
+                raise FileNotFoundError(f"Firebase service account file not found: {firebase_service_account_file}")
+            firebase_cred = credentials.Certificate(firebase_service_account_file)
+        else:
+            raise RuntimeError(
+                "Set FIREBASE_SERVICE_ACCOUNT_PATH or FIREBASE_SERVICE_ACCOUNT_JSON for server token verification."
+            )
+
+        if not firebase_admin._apps:
+            firebase_admin.initialize_app(firebase_cred, {'projectId': firebase_project_id} if firebase_project_id else None)
+        FIREBASE_AVAILABLE = True
+        print("Firebase authentication available with service account credentials")
+    except Exception as e:
+        FIREBASE_AUTH_ERROR = str(e)
+        print(f"Firebase authentication unavailable: {e}")
 
 def is_gemini_quota_error(error_message):
     """True when Gemini rejected the request due to rate limits."""
@@ -183,9 +239,211 @@ STATIC_MARS_ROVERS = {
     ]
 }
 
+def login_required(view):
+    @wraps(view)
+    def wrapped_view(*args, **kwargs):
+        if not session.get('user_id'):
+            if request.path.startswith('/api/'):
+                return jsonify({'error': 'Authentication required'}), 401
+            return redirect(url_for('login', next=request.path))
+        return view(*args, **kwargs)
+    return wrapped_view
+
+def get_current_user_id():
+    return session.get('user_id')
+
+def get_effective_user_id(data=None):
+    if get_current_user_id():
+        return get_current_user_id()
+    if data and data.get('user_id'):
+        return data.get('user_id')
+    return request.args.get('user_id', 'default_user')
+
+def build_firebase_profile(decoded_token):
+    uid = decoded_token.get('uid')
+    email = decoded_token.get('email') or ''
+    display_name = decoded_token.get('name') or (email.split('@')[0] if email else 'Space Explorer')
+    today = datetime.now().strftime('%Y-%m-%d')
+
+    if uid not in user_profiles:
+        user_profiles[uid] = {
+            'username': display_name,
+            'email': email,
+            'location': 'Earth',
+            'member_since': today,
+            'preferences': {
+                'theme': 'dark',
+                'notifications': True,
+                'language': 'en',
+                'units': 'metric'
+            },
+            'stats': {
+                'space_objects_explored': 0,
+                'events_tracked': 0,
+                'ai_questions_asked': 0,
+                'pages_visited': 0,
+                'last_login': datetime.now().isoformat()
+            },
+            'favorites': [],
+            'search_history': [],
+            'activity_log': []
+        }
+    else:
+        user_profiles[uid]['email'] = email or user_profiles[uid].get('email', '')
+        user_profiles[uid]['username'] = user_profiles[uid].get('username') or display_name
+        user_profiles[uid]['stats']['last_login'] = datetime.now().isoformat()
+
+    return user_profiles[uid]
+
+def ensure_session_profile(user_id):
+    if user_id in user_profiles:
+        return user_profiles[user_id]
+
+    today = datetime.now().strftime('%Y-%m-%d')
+    email = session.get('user_email', '')
+    username = email.split('@')[0] if email else 'Space Explorer'
+    user_profiles[user_id] = {
+        'username': username,
+        'email': email,
+        'location': 'Earth',
+        'member_since': today,
+        'preferences': {
+            'theme': 'dark',
+            'notifications': True,
+            'language': 'en',
+            'units': 'metric'
+        },
+        'stats': {
+            'space_objects_explored': 0,
+            'events_tracked': 0,
+            'ai_questions_asked': 0,
+            'pages_visited': 0,
+            'last_login': datetime.now().isoformat()
+        },
+        'favorites': [],
+        'search_history': [],
+        'activity_log': []
+    }
+    return user_profiles[user_id]
+
+def is_google_cert_fetch_error(error):
+    error_message = str(error).lower()
+    return (
+        'www.googleapis.com' in error_message
+        or 'securetoken@system.gserviceaccount.com' in error_message
+        or 'unable to connect to proxy' in error_message
+        or 'connection refused' in error_message
+    )
+
+def decode_firebase_token_for_development(id_token):
+    """Development fallback for local machines that cannot fetch Firebase public certs."""
+    if not ALLOW_DEV_FIREBASE_TOKEN_FALLBACK:
+        raise RuntimeError('Development Firebase token fallback is disabled')
+
+    token_parts = id_token.split('.')
+    if len(token_parts) != 3:
+        raise ValueError('Firebase ID token is malformed')
+
+    payload_part = token_parts[1] + '=' * (-len(token_parts[1]) % 4)
+    payload = json.loads(base64.urlsafe_b64decode(payload_part.encode('utf-8')).decode('utf-8'))
+    now = int(time.time())
+    project_id = FIREBASE_PROJECT_ID or FIREBASE_WEB_CONFIG.get('projectId')
+
+    if payload.get('exp', 0) < now:
+        raise ValueError('Firebase ID token is expired')
+    if project_id and payload.get('aud') != project_id:
+        raise ValueError('Firebase ID token audience does not match this Firebase project')
+    if project_id and payload.get('iss') != f'https://securetoken.google.com/{project_id}':
+        raise ValueError('Firebase ID token issuer does not match this Firebase project')
+
+    uid = payload.get('user_id') or payload.get('sub')
+    if not uid:
+        raise ValueError('Firebase ID token does not include a user id')
+
+    payload['uid'] = uid
+    return payload
+
+def verify_firebase_id_token(id_token):
+    try:
+        return firebase_auth.verify_id_token(id_token)
+    except Exception as error:
+        if is_google_cert_fetch_error(error):
+            print(
+                "Firebase cert fetch failed; using development-only local ID token decode. "
+                "Do not enable this fallback in production.",
+                flush=True,
+            )
+            return decode_firebase_token_for_development(id_token)
+        raise
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/login')
+def login():
+    if session.get('user_id'):
+        return redirect(url_for('profile'))
+    return render_template('auth.html', mode='login', firebase_config=FIREBASE_WEB_CONFIG)
+
+@app.route('/signup')
+def signup():
+    if session.get('user_id'):
+        return redirect(url_for('profile'))
+    return render_template('auth.html', mode='signup', firebase_config=FIREBASE_WEB_CONFIG)
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+@app.route('/api/auth/session', methods=['POST'])
+def create_auth_session():
+    if not FIREBASE_AVAILABLE:
+        return jsonify({
+            'error': 'Firebase Admin is not configured on the server',
+            'details': FIREBASE_AUTH_ERROR
+        }), 503
+
+    data = request.get_json() or {}
+    id_token = data.get('idToken')
+    if not id_token:
+        return jsonify({'error': 'Firebase ID token is required'}), 400
+
+    try:
+        decoded_token = verify_firebase_id_token(id_token)
+        session['user_id'] = decoded_token['uid']
+        session['user_email'] = decoded_token.get('email', '')
+        build_firebase_profile(decoded_token)
+        return jsonify({'success': True, 'redirect': url_for('profile')})
+    except Exception as e:
+        error_message = str(e)
+        if is_google_cert_fetch_error(error_message):
+            error_message = (
+                'The server could not reach Google public certs to verify the Firebase token. '
+                'Local development fallback is enabled only when FLASK_ENV=development.'
+            )
+        elif 'Application Default Credentials' in error_message:
+            error_message = (
+                'Firebase server credentials are not using the local service-account file. '
+                'Restart Flask after setting FIREBASE_SERVICE_ACCOUNT_PATH=instance/firebase-service-account.json.'
+            )
+        return jsonify({'error': f'Firebase authentication failed: {error_message}'}), 401
+
+@app.route('/api/auth/me')
+def current_auth_user():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'authenticated': False}), 401
+    profile = user_profiles.get(user_id, {})
+    return jsonify({
+        'authenticated': True,
+        'user': {
+            'id': user_id,
+            'email': session.get('user_email', profile.get('email', '')),
+            'username': profile.get('username', 'Space Explorer')
+        }
+    })
 
 @app.route('/explore')
 def explore():
@@ -208,6 +466,7 @@ def ai_chat():
     return render_template('ai-chat.html')
 
 @app.route('/profile')
+@login_required
 def profile():
     return render_template('profile.html')
 
@@ -908,7 +1167,7 @@ def ai_search_api():
         # Check if Gemini AI is available
         if not GEMINI_AVAILABLE:
             # Use fallback system instead of returning error
-            fallback_response = get_fallback_response(query, search_type)
+            fallback_response = get_fallback_response(query, search_type, response_length)
             return jsonify({
                 'query': query,
                 'response': fallback_response,
@@ -925,6 +1184,7 @@ def ai_search_api():
         
         try:
             ai_response, model_used = generate_gemini_content(prompt)
+            ai_response = limit_ai_response(ai_response, response_length)
             
             return jsonify({
                 'query': query,
@@ -941,7 +1201,7 @@ def ai_search_api():
             print(f"AI Error: {error_message}")  # Debug logging
             
             if is_gemini_quota_error(error_message):
-                fallback_response = get_fallback_response(query, search_type)
+                fallback_response = get_fallback_response(query, search_type, response_length)
                 return jsonify({
                     'query': query,
                     'response': fallback_response,
@@ -990,6 +1250,7 @@ def ai_chat_api():
 
         try:
             answer, model_used = generate_gemini_content(prompt)
+            answer = limit_ai_response(answer, 'detailed')
             return jsonify({
                 'answer': answer,
                 'status': 'success',
@@ -1025,18 +1286,20 @@ def create_search_prompt(query, search_type, response_length):
     Search Type: {search_type}
     Response Length: {response_length}
     
-    Please provide a comprehensive answer that is:"""
+    Please answer in the exact requested length. Do not exceed it:"""
     
     # Add length-specific instructions
     if response_length == 'concise':
-        base_prompt += "\n- Concise and to the point (2-3 paragraphs)"
-        base_prompt += "\n- Focus on key facts and essential information"
+        base_prompt += "\n- Quick answer: 2-3 short lines only"
+        base_prompt += "\n- Start with the direct answer and include only the most important facts"
+        base_prompt += "\n- No headings or bullet lists"
     elif response_length == 'detailed':
-        base_prompt += "\n- Detailed and informative (4-6 paragraphs)"
-        base_prompt += "\n- Include relevant examples and explanations"
+        base_prompt += "\n- Detailed answer: 7-8 clear lines"
+        base_prompt += "\n- Include the main explanation plus one useful example or context detail"
+        base_prompt += "\n- Keep each line readable and avoid long paragraphs"
     else:  # comprehensive
-        base_prompt += "\n- Comprehensive and thorough (6+ paragraphs)"
-        base_prompt += "\n- Include detailed explanations, examples, and related concepts"
+        base_prompt += "\n- In-depth answer: 2-3 paragraphs"
+        base_prompt += "\n- Include explanation, examples, and related context without going beyond 3 paragraphs"
     
     # Add type-specific context
     type_contexts = {
@@ -1055,17 +1318,67 @@ def create_search_prompt(query, search_type, response_length):
     base_prompt += """
     
     Format your response with:
-    - Clear paragraphs
-        - Scientific accuracy
+    - Scientific accuracy
     - Engaging explanations
     - Relevant examples when helpful
     - Current information (as of 2024)
+    - The exact length requested above
     
     Answer:"""
     
     return base_prompt.format(query=query, search_type=search_type, response_length=response_length)
 
-def get_fallback_response(query, search_type):
+def _split_response_sentences(text):
+    """Split prose into sentence-like chunks while keeping punctuation."""
+    return [part.strip() for part in re.split(r'(?<=[.!?])\s+', text.strip()) if part.strip()]
+
+def _wrap_words(text, max_lines, words_per_line):
+    words = text.split()
+    max_words = max_lines * words_per_line
+    if len(words) > max_words:
+        words = words[:max_words]
+        if words:
+            words[-1] = words[-1].rstrip('.,;:') + '.'
+
+    lines = []
+    for index in range(0, len(words), words_per_line):
+        lines.append(" ".join(words[index:index + words_per_line]))
+        if len(lines) == max_lines:
+            break
+    return "\n".join(line for line in lines if line.strip())
+
+def limit_ai_response(text, response_length='detailed'):
+    """Keep AI answers aligned with the selected response length."""
+    if not text:
+        return text
+
+    clean_text = text.strip()
+    sentences = _split_response_sentences(re.sub(r'\s+', ' ', clean_text))
+
+    if response_length == 'concise':
+        return _wrap_words(" ".join(sentences[:2]), max_lines=3, words_per_line=16)
+
+    if response_length == 'detailed':
+        return _wrap_words(" ".join(sentences[:8]), max_lines=8, words_per_line=18)
+
+    paragraphs = [paragraph.strip() for paragraph in re.split(r'\n\s*\n', clean_text) if paragraph.strip()]
+    if len(paragraphs) >= 2:
+        return "\n\n".join(paragraphs[:3])
+
+    if len(sentences) <= 4:
+        return clean_text
+
+    selected = sentences[:12]
+    break_one = max(2, len(selected) // 3)
+    break_two = max(break_one + 2, (len(selected) * 2) // 3)
+    paragraphs = [
+        " ".join(selected[:break_one]),
+        " ".join(selected[break_one:break_two]),
+        " ".join(selected[break_two:])
+    ]
+    return "\n\n".join(paragraph for paragraph in paragraphs if paragraph.strip())
+
+def get_fallback_response(query, search_type, response_length='detailed'):
     """Provide fallback responses when AI is unavailable"""
     
     # Simple keyword-based fallback responses
@@ -1085,10 +1398,11 @@ def get_fallback_response(query, search_type):
     query_lower = query.lower()
     for keyword, response in fallback_responses.items():
         if keyword in query_lower:
-            return response
+            return limit_ai_response(response, response_length)
     
     # Generic fallback response
-    return f"I apologize, but I'm unable to provide a detailed response about '{query}' at the moment. This appears to be a question about space or astronomy. For the most accurate and up-to-date information, I recommend consulting NASA's official website, the European Space Agency (ESA), or other reputable astronomical organizations. These sources provide current research findings and verified scientific information about space phenomena."
+    response = f"I apologize, but I'm unable to provide a detailed response about '{query}' at the moment. This appears to be a question about space or astronomy. For the most accurate and up-to-date information, I recommend consulting NASA's official website, the European Space Agency (ESA), or other reputable astronomical organizations. These sources provide current research findings and verified scientific information about space phenomena."
+    return limit_ai_response(response, response_length)
 
 @app.route('/api/ai/search/history')
 def get_ai_search_history():
@@ -1205,6 +1519,7 @@ def advanced_ai_search():
         
         try:
             ai_response, model_used = generate_gemini_content(prompt)
+            ai_response = limit_ai_response(ai_response, response_length)
             
             return jsonify({
                 'query': query,
@@ -1224,7 +1539,7 @@ def advanced_ai_search():
             print(f"Advanced AI Error: {error_message}")  # Debug logging
             
             if is_gemini_quota_error(error_message):
-                fallback_response = get_fallback_response(query, search_type)
+                fallback_response = get_fallback_response(query, search_type, response_length)
                 return jsonify({
                     'query': query,
                     'response': fallback_response,
@@ -1237,7 +1552,7 @@ def advanced_ai_search():
                 })
             else:
                 # Other AI errors
-                fallback_response = get_fallback_response(query, search_type)
+                fallback_response = get_fallback_response(query, search_type, response_length)
                 return jsonify({
                     'query': query,
                     'response': fallback_response,
@@ -1263,15 +1578,20 @@ Difficulty Level: {difficulty_level}
 Include Examples: {include_examples}
 Include Recent Discoveries: {include_recent_discoveries}
 
-Please provide a comprehensive answer that is:"""
+Please answer in the exact requested length. Do not exceed it:"""
     
     # Add length-specific instructions
     if response_length == 'concise':
-        base_prompt += "\n- Concise and to the point (2-3 paragraphs)"
+        base_prompt += "\n- Quick answer: 2-3 short lines only"
+        base_prompt += "\n- Start with the direct answer and include only the most important facts"
+        base_prompt += "\n- No headings or bullet lists"
     elif response_length == 'detailed':
-        base_prompt += "\n- Detailed and informative (4-6 paragraphs)"
+        base_prompt += "\n- Detailed answer: 7-8 clear lines"
+        base_prompt += "\n- Include the main explanation plus one useful example or context detail"
+        base_prompt += "\n- Keep each line readable and avoid long paragraphs"
     else:  # comprehensive
-        base_prompt += "\n- Comprehensive and thorough (6+ paragraphs)"
+        base_prompt += "\n- In-depth answer: 2-3 paragraphs"
+        base_prompt += "\n- Include explanation, examples, and related context without going beyond 3 paragraphs"
     
     # Add difficulty level instructions
     if difficulty_level == 'beginner':
@@ -1310,10 +1630,10 @@ Please provide a comprehensive answer that is:"""
     base_prompt += """
     
     Format your response with:
-    - Clear paragraphs
     - Scientific accuracy
     - Engaging explanations
     - Current information (as of 2024)
+    - The exact length requested above
     
     Answer:"""
     
@@ -2905,6 +3225,10 @@ def merge_profile_response(profile, preferences):
         merged['preferences'] = preferences
     return merged
 
+def use_supabase_profile_store():
+    """Firebase-authenticated sessions use the local profile bucket unless explicitly migrated."""
+    return SUPABASE_AVAILABLE and not session.get('user_id')
+
 # Fallback in-memory storage (when Supabase is not available)
 user_profiles = {
     'default_user': {
@@ -2932,12 +3256,15 @@ user_profiles = {
 }
 
 @app.route('/api/profile')
+@login_required
 def get_profile():
     """Get user profile data"""
     try:
-        user_id = request.args.get('user_id', 'default_user')
+        user_id = get_effective_user_id()
+        if session.get('user_id'):
+            ensure_session_profile(user_id)
         
-        if SUPABASE_AVAILABLE:
+        if use_supabase_profile_store():
             # Use Supabase
             supabase = get_supabase_manager()
             if user_id == 'default_user':
@@ -2988,13 +3315,16 @@ def get_profile():
         return jsonify({'error': f'Failed to get profile: {str(e)}'}), 500
 
 @app.route('/api/profile/update', methods=['POST'])
+@login_required
 def update_profile():
     """Update user profile information"""
     try:
         data = request.get_json()
-        user_id = data.get('user_id', 'default_user')
+        user_id = get_effective_user_id(data)
+        if session.get('user_id'):
+            ensure_session_profile(user_id)
         
-        if SUPABASE_AVAILABLE:
+        if use_supabase_profile_store():
             # Use Supabase
             supabase = get_supabase_manager()
             resolved_id = resolve_supabase_user_id(user_id)
@@ -3036,12 +3366,15 @@ def update_profile():
         return jsonify({'error': f'Failed to update profile: {str(e)}'}), 500
 
 @app.route('/api/profile/stats')
+@login_required
 def get_profile_stats():
     """Get user statistics and activity data"""
     try:
-        user_id = request.args.get('user_id', 'default_user')
+        user_id = get_effective_user_id()
+        if session.get('user_id'):
+            ensure_session_profile(user_id)
         
-        if SUPABASE_AVAILABLE:
+        if use_supabase_profile_store():
             # Use Supabase
             supabase = get_supabase_manager()
             if user_id == 'default_user':
@@ -3102,12 +3435,15 @@ def get_profile_stats():
         return jsonify({'error': f'Failed to get stats: {str(e)}'}), 500
 
 @app.route('/api/profile/favorites')
+@login_required
 def get_favorites():
     """Get user's favorite items"""
     try:
-        user_id = request.args.get('user_id', 'default_user')
+        user_id = get_effective_user_id()
+        if session.get('user_id'):
+            ensure_session_profile(user_id)
         
-        if SUPABASE_AVAILABLE:
+        if use_supabase_profile_store():
             # Use Supabase
             supabase = get_supabase_manager()
             if user_id == 'default_user':
@@ -3139,17 +3475,20 @@ def get_favorites():
         return jsonify({'error': f'Failed to get favorites: {str(e)}'}), 500
 
 @app.route('/api/profile/favorites/add', methods=['POST'])
+@login_required
 def add_favorite():
     """Add item to user's favorites"""
     try:
         data = request.get_json()
-        user_id = data.get('user_id', 'default_user')
+        user_id = get_effective_user_id(data)
+        if session.get('user_id'):
+            ensure_session_profile(user_id)
         item = data.get('item')
         
         if not item:
             return jsonify({'error': 'Item data is required'}), 400
             
-        if SUPABASE_AVAILABLE:
+        if use_supabase_profile_store():
             # Use Supabase
             supabase = get_supabase_manager()
             resolved_id = resolve_supabase_user_id(user_id)
@@ -3195,17 +3534,20 @@ def add_favorite():
         return jsonify({'error': f'Failed to add favorite: {str(e)}'}), 500
 
 @app.route('/api/profile/favorites/remove', methods=['POST'])
+@login_required
 def remove_favorite():
     """Remove item from user's favorites"""
     try:
         data = request.get_json()
-        user_id = data.get('user_id', 'default_user')
+        user_id = get_effective_user_id(data)
+        if session.get('user_id'):
+            ensure_session_profile(user_id)
         item_id = data.get('item_id')
         
         if not item_id:
             return jsonify({'error': 'Item ID is required'}), 400
             
-        if SUPABASE_AVAILABLE:
+        if use_supabase_profile_store():
             # Use Supabase
             supabase = get_supabase_manager()
             resolved_id = resolve_supabase_user_id(user_id)
@@ -3238,14 +3580,17 @@ def remove_favorite():
         return jsonify({'error': f'Failed to remove favorite: {str(e)}'}), 500
 
 @app.route('/api/profile/activity')
+@login_required
 def get_activity():
     """Get user's activity log"""
     try:
-        user_id = request.args.get('user_id', 'default_user')
+        user_id = get_effective_user_id()
+        if session.get('user_id'):
+            ensure_session_profile(user_id)
         limit = request.args.get('limit', 50, type=int)
         activity_type = request.args.get('type', 'all')
         
-        if SUPABASE_AVAILABLE:
+        if use_supabase_profile_store():
             # Use Supabase
             supabase = get_supabase_manager()
             if user_id == 'default_user':
@@ -3283,18 +3628,21 @@ def get_activity():
         return jsonify({'error': f'Failed to get activity: {str(e)}'}), 500
 
 @app.route('/api/profile/activity/log', methods=['POST'])
+@login_required
 def log_activity():
     """Log a new user activity"""
     try:
         data = request.get_json()
-        user_id = data.get('user_id', 'default_user')
+        user_id = get_effective_user_id(data)
+        if session.get('user_id'):
+            ensure_session_profile(user_id)
         activity_type = data.get('type')
         details = data.get('details', {})
         
         if not activity_type:
             return jsonify({'error': 'Activity type is required'}), 400
             
-        if SUPABASE_AVAILABLE:
+        if use_supabase_profile_store():
             # Use Supabase
             supabase = get_supabase_manager()
             resolved_id = resolve_supabase_user_id(user_id)
@@ -3342,13 +3690,16 @@ def log_activity():
         return jsonify({'error': f'Failed to log activity: {str(e)}'}), 500
 
 @app.route('/api/profile/search-history')
+@login_required
 def get_search_history():
     """Get user's search history"""
     try:
-        user_id = request.args.get('user_id', 'default_user')
+        user_id = get_effective_user_id()
+        if session.get('user_id'):
+            ensure_session_profile(user_id)
         limit = request.args.get('limit', 20, type=int)
         
-        if SUPABASE_AVAILABLE:
+        if use_supabase_profile_store():
             # Use Supabase
             supabase = get_supabase_manager()
             if user_id == 'default_user':
@@ -3386,18 +3737,21 @@ def get_search_history():
         return jsonify({'error': f'Failed to get search history: {str(e)}'}), 500
 
 @app.route('/api/profile/search-history/add', methods=['POST'])
+@login_required
 def add_search_history():
     """Add search query to user's history"""
     try:
         data = request.get_json()
-        user_id = data.get('user_id', 'default_user')
+        user_id = get_effective_user_id(data)
+        if session.get('user_id'):
+            ensure_session_profile(user_id)
         query = data.get('query')
         search_type = data.get('search_type', 'general')
         
         if not query:
             return jsonify({'error': 'Search query is required'}), 400
             
-        if SUPABASE_AVAILABLE:
+        if use_supabase_profile_store():
             # Use Supabase
             supabase = get_supabase_manager()
             resolved_id = resolve_supabase_user_id(user_id)
@@ -3435,12 +3789,15 @@ def add_search_history():
         return jsonify({'error': f'Failed to add search: {str(e)}'}), 500
 
 @app.route('/api/profile/achievements')
+@login_required
 def get_achievements():
     """Get user's achievements and badges"""
     try:
-        user_id = request.args.get('user_id', 'default_user')
+        user_id = get_effective_user_id()
+        if session.get('user_id'):
+            ensure_session_profile(user_id)
         
-        if SUPABASE_AVAILABLE:
+        if use_supabase_profile_store():
             # Use Supabase
             supabase = get_supabase_manager()
             if user_id == 'default_user':

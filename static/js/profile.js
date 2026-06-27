@@ -38,7 +38,7 @@ async function initializeProfile() {
 // Load profile data from API
 async function loadProfileData() {
     try {
-        const response = await fetch('/api/profile?user_id=default_user');
+        const response = await fetch('/api/profile');
         const data = await response.json();
         
         if (data.success) {
@@ -59,7 +59,7 @@ async function loadProfileData() {
 // Load profile stats from API
 async function loadProfileStats() {
     try {
-        const response = await fetch('/api/profile/stats?user_id=default_user');
+        const response = await fetch('/api/profile/stats');
         const data = await response.json();
         
         if (data.success) {
@@ -175,7 +175,7 @@ async function loadTabContent(tabName) {
 async function loadOverviewContent() {
     try {
         // Load recent activities
-        const response = await fetch('/api/profile/activity?user_id=default_user&limit=5');
+        const response = await fetch('/api/profile/activity?limit=5');
         const data = await response.json();
         
         if (data.success) {
@@ -189,7 +189,7 @@ async function loadOverviewContent() {
 // Load favorites tab content
 async function loadFavoritesContent() {
     try {
-        const response = await fetch('/api/profile/favorites?user_id=default_user');
+        const response = await fetch('/api/profile/favorites');
         const data = await response.json();
         
         if (data.success) {
@@ -204,7 +204,7 @@ async function loadFavoritesContent() {
 // Load activity tab content
 async function loadActivityContent() {
     try {
-        const response = await fetch('/api/profile/activity?user_id=default_user&limit=50');
+        const response = await fetch('/api/profile/activity?limit=50');
         const data = await response.json();
         
         if (data.success) {
@@ -219,7 +219,7 @@ async function loadActivityContent() {
 // Load achievements tab content
 async function loadAchievementsContent() {
     try {
-        const response = await fetch('/api/profile/achievements?user_id=default_user');
+        const response = await fetch('/api/profile/achievements');
         const data = await response.json();
         
         if (data.success) {
@@ -236,7 +236,7 @@ async function loadAchievementsContent() {
 // Load search history tab content
 async function loadSearchHistoryContent() {
     try {
-        const response = await fetch('/api/profile/search-history?user_id=default_user&limit=50');
+        const response = await fetch('/api/profile/search-history?limit=50');
         const data = await response.json();
         
         if (data.success) {
@@ -427,7 +427,6 @@ async function handleEditProfile(event) {
     
     const formData = new FormData(event.target);
     const updateData = {
-        user_id: 'default_user',
         username: formData.get('username'),
         email: formData.get('email'),
         location: formData.get('location')
@@ -464,7 +463,6 @@ async function handleAddFavorite(event) {
     
     const formData = new FormData(event.target);
     const favoriteData = {
-        user_id: 'default_user',
         item: {
             id: `fav_${Date.now()}`,
             title: formData.get('title'),
@@ -510,7 +508,6 @@ async function removeFavorite(itemId) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                user_id: 'default_user',
                 item_id: itemId
             })
         });
@@ -556,7 +553,6 @@ async function updateSetting(setting, value) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                user_id: 'default_user',
                 preferences: {
                     [setting]: value
                 }
@@ -666,7 +662,6 @@ async function logActivity(activityType, details = {}) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                user_id: 'default_user',
                 type: activityType,
                 details: details
             })
