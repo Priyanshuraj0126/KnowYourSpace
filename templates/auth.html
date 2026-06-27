@@ -17,7 +17,7 @@
             <p>{{ 'Save favorites, track activity, and keep your space journey personal.' if mode == 'signup' else 'Log in to continue tracking your exploration profile.' }}</p>
         </div>
 
-        <form class="auth-form" id="firebase-auth-form" data-mode="{{ mode }}">
+        <form class="auth-form" id="firebase-auth-form" data-mode="{{ mode }}" method="post">
             <div class="auth-message" id="auth-message" hidden></div>
 
             <button type="button" class="auth-google" id="google-auth-button">

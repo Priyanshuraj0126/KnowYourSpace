@@ -47,6 +47,10 @@ async function createServerSession(user) {
 
 if (!firebaseReady()) {
     showMessage('Firebase web config is missing. Add FIREBASE_API_KEY, FIREBASE_AUTH_DOMAIN, FIREBASE_PROJECT_ID, and FIREBASE_APP_ID to .env.');
+    form?.addEventListener('submit', (event) => event.preventDefault());
+    form?.querySelectorAll('button').forEach((button) => {
+        button.disabled = true;
+    });
 } else if (form) {
     const app = initializeApp(config);
     const auth = getAuth(app);
