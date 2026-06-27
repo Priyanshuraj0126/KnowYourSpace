@@ -105,7 +105,6 @@
             </div>
             <div class="results-content">
                 <div class="ai-response" id="ai-response"></div>
-                <div class="response-meta" id="response-meta"></div>
             </div>
         </div>
     </section>
@@ -125,8 +124,7 @@
             const searchButton = document.querySelector('.search-button');
             const searchResults = document.getElementById('search-results');
             const aiResponse = document.getElementById('ai-response');
-            const responseMeta = document.getElementById('response-meta');
-            const loadingOverlay = document.getElementById('loading-overlay');
+                const loadingOverlay = document.getElementById('loading-overlay');
 
             searchButton.addEventListener('click', performSearch);
             searchInput.addEventListener('keypress', function(e) {
@@ -214,18 +212,12 @@
                     <div class="response-text">${formatResponse(data.response)}</div>
                 `;
 
-                responseMeta.innerHTML = `
-                    <div class="meta-item"><strong>Source:</strong> ${isLive ? data.ai_model : 'Fallback'}</div>
-                    <div class="meta-item"><strong>Length:</strong> ${data.response_length || 'n/a'}</div>
-                `;
-
                 searchResults.style.display = 'block';
                 searchResults.scrollIntoView({ behavior: 'smooth' });
             }
 
             function showError(message) {
                 aiResponse.innerHTML = `<div class="response-text error">${escapeHtml(message)}</div>`;
-                responseMeta.innerHTML = '';
                 searchResults.style.display = 'block';
             }
 
