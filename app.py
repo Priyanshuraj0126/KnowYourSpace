@@ -138,17 +138,21 @@ if GEMINI_API_KEY:
 
         # Prefer models with separate quotas; 2.0-flash often hits free-tier limits first
         preferred_models = [
+            'models/gemini-2.5-flash-lite',
+            'models/gemini-2.0-flash-lite',
             'models/gemini-2.5-flash',
             'models/gemini-2.5-pro',
             'models/gemini-2.0-flash-001',
-            'models/gemini-2.0-flash-lite',
             'models/gemini-2.0-flash',
             'models/gemini-1.5-flash',
             'models/gemini-1.5-pro',
         ]
         GEMINI_MODEL_CHAIN = [m for m in preferred_models if m in available_models]
-        if not GEMINI_MODEL_CHAIN and available_models:
-            GEMINI_MODEL_CHAIN = [available_models[0]]
+        GEMINI_MODEL_CHAIN.extend(
+            model_name
+            for model_name in available_models
+            if model_name not in GEMINI_MODEL_CHAIN
+        )
 
         if GEMINI_MODEL_CHAIN:
             GEMINI_ACTIVE_MODEL = GEMINI_MODEL_CHAIN[0]
@@ -1207,10 +1211,9 @@ def ai_search_api():
                 'response': fallback_response,
                 'search_type': search_type,
                 'response_length': response_length,
-                'ai_model': 'Fallback System',
+                'ai_model': 'KnowYourSpace Reference',
                 'timestamp': datetime.now().isoformat(),
-                'status': 'fallback',
-                'note': 'AI service is currently unavailable. Showing fallback response. To enable AI features, please set your GEMINI_API_KEY in the .env file.'
+                'status': 'reference'
             })
         
         # Create a context-aware prompt based on search type and response length
@@ -1241,10 +1244,9 @@ def ai_search_api():
                     'response': fallback_response,
                     'search_type': search_type,
                     'response_length': response_length,
-                    'ai_model': 'Fallback System',
+                    'ai_model': 'KnowYourSpace Reference',
                     'timestamp': datetime.now().isoformat(),
-                    'status': 'quota_exceeded',
-                    'note': 'AI quota exceeded for today, showing fallback response. Try again tomorrow or upgrade your plan.'
+                    'status': 'reference'
                 })
             else:
                 fallback_response = get_fallback_response(
@@ -1257,10 +1259,9 @@ def ai_search_api():
                     'response': fallback_response,
                     'search_type': search_type,
                     'response_length': response_length,
-                    'ai_model': 'Fallback System',
+                    'ai_model': 'KnowYourSpace Reference',
                     'timestamp': datetime.now().isoformat(),
-                    'status': 'fallback',
-                    'note': 'Live AI took too long to respond. Showing a backup answer instead.'
+                    'status': 'reference'
                 })
             
     except Exception as e:

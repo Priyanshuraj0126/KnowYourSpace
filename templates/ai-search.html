@@ -196,9 +196,11 @@
             }
 
             function showResults(data) {
-                const isLive = data.status === 'success';
+                const isLive = data.status === 'success' || data.status === 'reference';
                 const isQuota = data.status === 'quota_exceeded';
                 const headerLabel = isLive ? 'Gemini AI Response' : (isQuota ? 'Quota limit — backup answer' : 'Backup answer');
+
+                const displayLabel = data.status === 'reference' ? 'Reference Answer' : headerLabel;
 
                 aiResponse.innerHTML = `
                     ${!isLive ? `<div class="response-warning" style="display:flex;gap:0.75rem;padding:1rem;background:#fff8e6;border:1px solid #f0d080;border-radius:2px;margin-bottom:1rem;font-size:0.9rem;">
@@ -207,14 +209,13 @@
                     </div>` : ''}
                     <div class="response-header">
                         <i class="fas fa-${isLive ? 'robot' : 'book'}"></i>
-                        <span>${headerLabel}</span>
+                        <span>${displayLabel}</span>
                     </div>
                     <div class="response-text">${formatResponse(data.response)}</div>
                 `;
 
                 responseMeta.innerHTML = `
                     <div class="meta-item"><strong>Source:</strong> ${isLive ? data.ai_model : 'Fallback'}</div>
-                    <div class="meta-item"><strong>Status:</strong> ${data.status}</div>
                     <div class="meta-item"><strong>Length:</strong> ${data.response_length || 'n/a'}</div>
                 `;
 
