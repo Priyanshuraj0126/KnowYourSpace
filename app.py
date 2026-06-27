@@ -1416,6 +1416,34 @@ def limit_ai_response(text, response_length='detailed'):
     ]
     return "\n\n".join(paragraph for paragraph in paragraphs if paragraph.strip())
 
+def get_reference_summary(query):
+    """Fetch a useful reference answer when Gemini quota is unavailable."""
+    try:
+        response = requests.get(
+            'https://en.wikipedia.org/w/api.php',
+            params={
+                'action': 'query',
+                'generator': 'search',
+                'gsrsearch': query,
+                'gsrlimit': 1,
+                'prop': 'extracts',
+                'exintro': 1,
+                'explaintext': 1,
+                'format': 'json',
+            },
+            headers={'User-Agent': 'KnowYourSpace/1.0'},
+            timeout=6,
+        )
+        response.raise_for_status()
+        pages = response.json().get('query', {}).get('pages', {})
+        if pages:
+            extract = next(iter(pages.values())).get('extract', '').strip()
+            if extract:
+                return extract
+    except (requests.RequestException, ValueError, StopIteration) as error:
+        print(f"Reference fallback unavailable: {error}")
+    return None
+
 def get_fallback_response(query, search_type, response_length='detailed'):
     """Provide fallback responses when AI is unavailable"""
     
@@ -1429,7 +1457,8 @@ def get_fallback_response(query, search_type, response_length='detailed'):
         
         'mars': "Mars is the fourth planet from the Sun and the second-smallest planet in our solar system. Often called the 'Red Planet' due to its reddish appearance, Mars has a thin atmosphere, polar ice caps, and evidence of ancient water flows. It's a primary target for human exploration, with multiple robotic missions studying its geology, climate, and potential for past or present life.",
         
-        'galaxy': "Galaxies are vast systems of stars, gas, dust, and dark matter held together by gravity. Our Milky Way galaxy contains hundreds of billions of stars and is just one of trillions of galaxies in the observable universe. Galaxies come in various shapes including spiral, elliptical, and irregular, and they often contain supermassive black holes at their centers."
+        'galaxy': "Galaxies are vast systems of stars, gas, dust, and dark matter held together by gravity. Our Milky Way galaxy contains hundreds of billions of stars and is just one of trillions of galaxies in the observable universe. Galaxies come in various shapes including spiral, elliptical, and irregular, and they often contain supermassive black holes at their centers.",
+        'supernova': "A supernova is the powerful explosion of a star. It can occur when a massive star exhausts its nuclear fuel and its core collapses, or when a white dwarf in a binary system gains enough matter to become unstable. The blast creates and disperses heavy elements, can briefly outshine an entire galaxy, and may leave behind a neutron star or black hole."
     }
     
     # Find the best matching fallback response
@@ -1437,9 +1466,13 @@ def get_fallback_response(query, search_type, response_length='detailed'):
     for keyword, response in fallback_responses.items():
         if keyword in query_lower:
             return limit_ai_response(response, response_length)
+
+    reference_response = get_reference_summary(query)
+    if reference_response:
+        return limit_ai_response(reference_response, response_length)
     
     # Generic fallback response
-    response = f"I apologize, but I'm unable to provide a detailed response about '{query}' at the moment. This appears to be a question about space or astronomy. For the most accurate and up-to-date information, I recommend consulting NASA's official website, the European Space Agency (ESA), or other reputable astronomical organizations. These sources provide current research findings and verified scientific information about space phenomena."
+    response = f"Live AI is temporarily unavailable for '{query}'. Please retry shortly."
     return limit_ai_response(response, response_length)
 
 @app.route('/api/ai/search/history')

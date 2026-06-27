@@ -179,6 +179,12 @@
             // Set default values
             document.getElementById('latitude').value = currentLat;
             document.getElementById('longitude').value = currentLon;
+            document.getElementById('place-search').addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    searchPlace();
+                }
+            });
             
             // Try to get user's location on page load
             getCurrentLocation();
@@ -198,7 +204,13 @@
                 const data = await readJsonResponse(response, 'Place search');
                 
                 if (response.ok && data.results && data.results.length > 0) {
-                    displaySearchResults(data.results);
+                    const bestMatch = data.results[0];
+                    selectPlace(
+                        bestMatch.lat,
+                        bestMatch.lon,
+                        bestMatch.name,
+                        bestMatch.country
+                    );
                 } else {
                     showError('No places found with that name. Please try a different search term.');
                 }
@@ -329,6 +341,10 @@
 
             // Update forecast
             displayForecast(data.daily_forecast);
+            document.getElementById('current-weather-section').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
         }
 
         // Display daily forecast
